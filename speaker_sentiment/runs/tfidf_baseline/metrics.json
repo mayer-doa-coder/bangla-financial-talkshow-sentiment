@@ -1,0 +1,46 @@
+{
+  "model": "TF-IDF + logreg C=2",
+  "features": "word 1-2",
+  "selected_on": "validation split (297 turns)",
+  "val_macro_f1": 0.5784086779750061,
+  "test_macro_f1": 0.5285960239061143,
+  "test_accuracy": 0.6234567901234568,
+  "per_class": {
+    "negative": {
+      "precision": 0.6914285714285714,
+      "recall": 0.6797752808988764,
+      "f1-score": 0.6855524079320113,
+      "support": 178.0
+    },
+    "neutral": {
+      "precision": 0.6,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.631578947368421,
+      "support": 108.0
+    },
+    "positive": {
+      "precision": 0.3103448275862069,
+      "recall": 0.23684210526315788,
+      "f1-score": 0.26865671641791045,
+      "support": 38.0
+    },
+    "accuracy": 0.6234567901234568,
+    "macro avg": {
+      "precision": 0.5339244663382594,
+      "recall": 0.5277613509429003,
+      "f1-score": 0.5285960239061143,
+      "support": 324.0
+    },
+    "weighted avg": {
+      "precision": 0.6162573739585233,
+      "recall": 0.6234567901234568,
+      "f1-score": 0.6186660807147163,
+      "support": 324.0
+    }
+  },
+  "n_train": 1009,
+  "n_val": 297,
+  "n_test": 324,
+  "split": "episode-disjoint, seed 13 (same as BanglaBERT run)",
+  "test_cohen_kappa": 0.3386
+}

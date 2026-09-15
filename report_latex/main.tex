@@ -132,7 +132,7 @@
 \thd{Group No.}  & \textbf{1}
 & \thd{Dataset Version} & v1.0 (15 September 2026) \\ \hline
 \thd{Students}   & \small Nafiz Ahmed (2107001) \textbullet{} Tawhidul Hasan (2107004) \textbullet{} Sarwad Hasan Siddiqui (2107006) \textbullet{} Saif Ahmed Shejan (2107009) \textbullet{} Maruf Shafiq (2107010) \textbullet{} Dewan Salman Rahman Zisan (2107015)
-& \thd{Repository}      & Not yet public --- offline archive submitted to the course instructor \\ \hline
+& \thd{Repository}      & {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}} \\ \hline
 \end{tabularx}
 \end{center}
 
@@ -213,11 +213,6 @@ project. Splitting is grouped by episode, never by row, so that turns from one p
 appear on both sides of the split; the deduplicated episode is removed before partitioning. All
 45 episodes carry trusted \texttt{pyannote} diarization in this build.\par}
 
-\vspace{8pt}
-\begin{center}
-\fbox{\parbox{0.95\textwidth}{\sffamily\small\textbf{FIRST-PAGE RULE:} Keep Page 1 as a visual
-synopsis. Use concise labels; detailed explanations belong in the main report.}}
-\end{center}
 
 \clearpage
 
@@ -249,10 +244,10 @@ This is a course-specific dataset report template. It combines the reporting log
 \thd{Dataset/report title}  & A Speaker-Attributed Sentiment Dataset for Bangla Financial Television Talk Shows \\ \hline
 \thd{Group and students}    & Group 1; six students: Nafiz Ahmed (2107001), Tawhidul Hasan (2107004), Sarwad Hasan Siddiqui (2107006), Saif Ahmed Shejan (2107009), Maruf Shafiq (2107010), Dewan Salman Rahman Zisan (2107015) \\ \hline
 \thd{Affiliation}           & Department of CSE, KUET, Khulna-9203, Bangladesh \\ \hline
-\thd{Corresponding student} & Sarwad Hasan Siddiqui (2107006), \underline{\hspace{2.2cm}}@stud.kuet.ac.bd \\ \hline
+\thd{Corresponding student} & Tawhidul Hasan (2107004), hasan2107004@stud.kuet.ac.bd \\ \hline
 \thd{Keywords}              & Bangla NLP; speaker-level sentiment; financial talk shows; speaker diarization; automatic speech recognition; LLM-as-judge; BanglaBERT; low-resource corpus \\ \hline
 \thd{Dataset version}       & v1.0; released 15 September 2026 \\ \hline
-\thd{Repository / persistent ID} & Not publicly released at submission; the dataset and code are submitted as an offline archive to the course instructor. A DOI should be minted at public release. \\ \hline
+\thd{Repository / persistent ID} & Git repository: {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}}. Access is currently restricted to the course instructor and the authors; no DOI is minted yet. Source broadcast audio and the fine-tuned checkpoint are excluded --- see Section 13 and the repository \texttt{.gitignore}. \\ \hline
 \thd{License}               & CC BY 4.0 for the derived annotations, transcripts and timings \emph{only}. Source broadcast audio is third-party copyrighted and is not covered by this licence and not redistributed (Section 13). \\ \hline
 \thd{Related article / source} & None \\ \hline
 \end{tabularx}
@@ -280,7 +275,7 @@ assertion, and allows an explicit \texttt{illegible} class for turns the ASR des
 release contains 2{,}414 turns, 150 judged speaker units, 1{,}811 turn labels and 1{,}630
 supervised turns partitioned episode-disjointly into 1{,}009/297/324. A BanglaBERT baseline reaches
 a test turn-level macro-F1 of 0.670 ($\kappa=0.496$) against a majority-class floor of 0.236 and a
-TF--IDF reference of 0.471, and a hierarchical speaker model scores 0.530 macro-F1 in grouped
+TF--IDF reference of 0.529, and a hierarchical speaker model scores 0.530 macro-F1 in grouped
 cross-validation over all 147 speaker units, demonstrating that the corpus supports a valid
 supervised workflow at both levels. \textbf{All reported scores measure
 agreement with the judge, not with human ground truth}; word error rate, diarization error rate
@@ -306,7 +301,7 @@ and annotator agreement remain unmeasured and are documented as such.
 \thd{Collection period}         & Original broadcast dates are \textbf{not recorded} in the source postings and are therefore not claimed; \texttt{registry.csv} carries channel, title and duration but no air date. Episodes were retrieved from public platform postings and the pipeline runs were executed August--September 2026 (second build). \\ \hline
 \thd{Dataset size}              & 45 unique episodes ($\approx$28.6 h audio); 5{,}395 ASR decode windows; \textbf{2{,}414 speaker turns} ($\approx$219{,}000 words); 212 speaker--episode units; 150 judged units; 1{,}811 turn labels; 1{,}630 supervised turns \\ \hline
 \thd{Target / labels}           & Turn level: \{\texttt{negative}, \texttt{neutral}, \texttt{positive}\} (plus \texttt{illegible}, excluded from supervision). Speaker level: \{\texttt{negative}, \texttt{mixed}, \texttt{neutral}, \texttt{positive}\} plus a continuous \texttt{stance\_score} $\in[-1,1]$. \\ \hline
-\thd{Accessibility}             & Not publicly released at submission; the dataset and code are submitted as an offline archive to the course instructor. A DOI should be minted at public release. Derived annotations, transcripts and timings are included in the archive; source audio is not. \\ \hline
+\thd{Accessibility}             & Git repository (restricted at submission): {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}}. It carries the derived annotations, transcripts, timings, diarization output, the build and baseline code and this report; the source broadcast audio is not redistributed. \\ \hline
 \thd{License / reuse terms}     & CC BY 4.0 for the derived annotations; source broadcast audio is third-party copyrighted and is \textbf{not} redistributed --- see Section 13. \\ \hline
 \end{longtable}
 
@@ -802,7 +797,7 @@ weights are computed on the training split only.
 \begin{tabularx}{\textwidth}{|L{4.0cm}|Y|}
 \hline
 \thd{Majority-class baseline} & Predicts the most frequent training class; reported as the floor. \\ \hline
-\thd{TF--IDF + logistic regression} & Character 3--5-grams (\texttt{char\_wb}, \texttt{min\_df}=2, sublinear TF, 40{,}771 features), balanced class weights, $C$ selected on the validation split from $\{0.5,1,2,4,8\}$. The transparent non-neural reference. \\ \hline
+\thd{TF--IDF + logistic regression} & Word 1--2-grams (\texttt{min\_df}=2, sublinear TF), balanced class weights. The feature family (word 1--2, \texttt{char\_wb} 2--5, \texttt{char\_wb} 3--5) and $C\in\{0.5,1,2,4,8\}$ were selected together on the validation split; word 1--2 with $C=2$ won at 0.578. Reproducible with \texttt{tfidf\_baseline.py}. \\ \hline
 \thd{BanglaBERT (main)} & \texttt{csebuetnlp/banglabert} (ELECTRA discriminator, 110M), \texttt{input\_mode = role\_turn}, \texttt{max\_len} 256, 6 epochs (best epoch 4, restored by validation macro-F1), batch 16, AdamW with encoder LR $2\times10^{-5}$ and head LR $1\times10^{-4}$, linear warmup 10\%, weight decay 0.01, gradient clipping 1.0, label smoothing 0.1, class weighting \textbf{on} (positive is 11.9\% of the data), per-sample weights from judge confidence $\times$ pass agreement, seed 42. Trained on a Colab T4. Hand-written training loop rather than \texttt{Trainer}, so the two weighting schemes compose cleanly. \\ \hline
 \end{tabularx}
 
@@ -837,7 +832,7 @@ models were selected on the validation split and evaluated once on test.}
 \hline
 \thd{Model} & \thd{Val macro-F1} & \thd{Test macro-F1} & \thd{Test acc.} & \thd{$\kappa$} & \thd{Notes} \\ \hline
 Majority class            & ---    & 0.236 & 0.549 & 0.000 & Floor \\ \hline
-TF--IDF char 3--5 + LogReg & 0.572 & 0.471 & 0.620 & 0.329 & Non-neural reference; $C=0.5$ \\ \hline
+TF--IDF word 1--2 + LogReg & 0.578 & 0.529 & 0.623 & 0.339 & Non-neural reference; $C=2$ \\ \hline
 \textbf{BanglaBERT (\texttt{role\_turn})} & \textbf{0.704} & \textbf{0.670} & \textbf{0.701} & \textbf{0.496} & Main baseline; class-weighted \\ \hline
 \end{tabular}
 \end{table}
@@ -1087,12 +1082,12 @@ human truth. \\ \hline
 \thd{Item} & \thd{Details} \\ \hline
 \endfirsthead
 \hline \thd{Item} & \thd{Details} \\ \hline \endhead
-\thd{Repository name}                   & None yet --- offline archive submitted to the course instructor; Zenodo is the intended host at public release \\ \hline
-\thd{Dataset DOI / persistent identifier} & Not assigned (see above) \\ \hline
-\thd{Direct dataset URL}                & Not assigned (see above) \\ \hline
+\thd{Repository name}                   & GitHub --- {\scriptsize\texttt{mayer-doa-coder/bangla-financial-talkshow-sentiment}}; Zenodo is the intended archival host once a DOI is minted \\ \hline
+\thd{Dataset DOI / persistent identifier} & Not yet minted \\ \hline
+\thd{Direct dataset URL}                & {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}} \\ \hline
 \thd{Access instructions}               & Restricted to the course instructor at submission; intended to become public. Derived annotations and transcripts are released; source broadcast audio is not redistributed and is obtainable from the channel references in \texttt{registry.csv}. \\ \hline
 \thd{Dataset license}                   & CC BY 4.0 for the derived annotations, transcripts and timings \emph{only}. Source broadcast audio is third-party copyrighted and is not covered by this licence and not redistributed (Section 13). \\ \hline
-\thd{Code / notebook URL}               & Included in the same archive under \texttt{speaker\_sentiment/}. Contains \texttt{build\_speaker\_corpus.py}, \texttt{llm\_judge.py}, \texttt{make\_datasets.py}, \texttt{predict\_speakers.py} and \texttt{Speaker\_Sentiment\_BanglaBERT.ipynb}. \\ \hline
+\thd{Code / notebook URL}               & Same repository, under \texttt{speaker\_sentiment/}. Contains \texttt{build\_speaker\_corpus.py}, \texttt{llm\_judge.py}, \texttt{make\_datasets.py}, \texttt{predict\_speakers.py}, \texttt{tfidf\_baseline.py} and \texttt{Speaker\_Sentiment\_BanglaBERT.ipynb}. \\ \hline
 \thd{Code version / commit / release}   & v1.0, build 2 (45-episode corpus); the archive is not under version control, so the release is identified by the dataset version \\ \hline
 \thd{README \& environment}             & \texttt{speaker\_sentiment/README.md} (pipeline, caveats, exact run sequence); \texttt{speaker\_sentiment/requirements.txt}; \texttt{torch} 2.12, \texttt{transformers}, \texttt{scikit-learn}, \texttt{pandas}, \texttt{matplotlib} \\ \hline
 \end{longtable}
@@ -1240,7 +1235,7 @@ study on word error rate and fusion techniques,'' arXiv:2406.08353, 2024.
 \bibitem{thisdataset} N. Ahmed, T. Hasan, S.~H. Siddiqui, S.~A. Shejan, M. Shafiq, and
 D.~S.~R. Zisan, ``A speaker-attributed sentiment dataset for Bangla financial television talk
 shows,'' v1.0, Department of CSE, Khulna University of Engineering \& Technology, 2026.
-Not yet assigned a DOI.
+GitHub: mayer-doa-coder/bangla-financial-talkshow-sentiment. DOI not yet minted.
 
 \end{thebibliography}
 
@@ -1344,7 +1339,7 @@ leakage-control requirements.}}
 \thd{Checklist item} & \thd{Criterion} & \thd{Yes/No} & \thd{Evidence / note} \\ \hline
 \endfirsthead
 \hline \thd{Checklist item} & \thd{Criterion} & \thd{Yes/No} & \thd{Evidence / note} \\ \hline \endhead
-\thd{Findable}       & Repository and persistent identifier/URL are provided; file/folder names are meaningful; metadata are searchable. & $\square$~Yes~/~$\boxtimes$~No & No DOI or public URL at submission; file and folder names are meaningful and \texttt{registry.csv} is searchable \\ \hline
+\thd{Findable}       & Repository and persistent identifier/URL are provided; file/folder names are meaningful; metadata are searchable. & $\square$~Yes~/~$\boxtimes$~No & Repository URL published; no DOI at submission; file and folder names are meaningful and \texttt{registry.csv} is searchable \\ \hline
 \thd{Accessible}     & Access instructions work; restrictions are justified; files can be downloaded by the intended user. & $\boxtimes$~Yes~/~$\square$~No & Audio not redistributed; \texttt{registry.csv} enables independent retrieval \\ \hline
 \thd{Interoperable}  & Common/open formats and standard units/labels are used where possible; schemas/codings are documented. & $\boxtimes$~Yes~/~$\square$~No & JSON / JSONL / CSV / WAV / RTTM; fused schema 2.0; Appendix A \\ \hline
 \thd{Reusable}       & License is explicit; README, data dictionary, provenance, limitations and citation information are provided. & $\boxtimes$~Yes~/~$\square$~No & CC BY 4.0 (derived annotations); README, Appendix A, Sections 9 and 12 present \\ \hline
