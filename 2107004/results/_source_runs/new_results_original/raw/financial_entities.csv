@@ -1,0 +1,29 @@
+canonical,aliases,target_type
+DSEX,ডিএসইএক্স|DSE X|শেয়ার সূচক,MARKET
+Bangladesh Bank,বাংলাদেশ ব্যাংক|কেন্দ্রীয় ব্যাংক,REGULATOR
+BSEC,বিএসইসি|বি এস ই সি|সিকিউরিটিজ কমিশন,REGULATOR
+NBR,এনবিআর|এন বি আর|জাতীয় রাজস্ব বোর্ড,REGULATOR
+BBS,বিবিএস|বি বি এস|বাংলাদেশ পরিসংখ্যান ব্যুরো,REGULATOR
+Ministry of Finance,অর্থ মন্ত্রণালয়|অর্থ মন্ত্রণালয়ের|অর্থ মন্ত্রণালয়ের,REGULATOR
+Planning Commission,পরিকল্পনা কমিশন,REGULATOR
+Government of Bangladesh,বাংলাদেশ সরকার|সরকারের অর্থনৈতিক নীতি|সরকারি অর্থনীতি,REGULATOR
+IMF,আইএমএফ|আই এম এফ|আন্তর্জাতিক মুদ্রা তহবিল,REGULATOR
+World Bank,বিশ্বব্যাংক|বিশ্ব ব্যাংক,REGULATOR
+ADB,এডিবি|এ ডি বি|এশীয় উন্নয়ন ব্যাংক,REGULATOR
+GDP,জিডিপি|জি ডি পি|মোট দেশজ উৎপাদন,MACRO_INDICATOR
+CPI,সিপিআই|সি পি আই|ভোক্তা মূল্যসূচক,MACRO_INDICATOR
+inflation,মূল্যস্ফীতি|মুদ্রাস্ফীতি|দ্রব্যমূল্য,MACRO_INDICATOR
+remittance,রেমিট্যান্স|প্রবাসী আয়|প্রবাসী আয়|রেমিটেন্স,MACRO_INDICATOR
+foreign exchange reserves,বৈদেশিক মুদ্রার রিজার্ভ|রিজার্ভ|বৈদেশিক মুদ্রার মজুত,MACRO_INDICATOR
+exchange rate,বিনিময় হার|বিনিময় হার|ডলার রেট|টাকার দর,MACRO_INDICATOR
+policy rate,নীতি সুদহার|পলিসি রেট|রেপো রেট,MACRO_INDICATOR
+imports,আমদানি|আমদানি ব্যয়|আমদানি ব্যয়,MACRO_INDICATOR
+exports,রপ্তানি|রফতানি|রপ্তানি আয়|রপ্তানি আয়,MACRO_INDICATOR
+trade balance,বাণিজ্য ভারসাম্য|বাণিজ্য ঘাটতি|ট্রেড ব্যালেন্স,MACRO_INDICATOR
+letter of credit,এলসি|এল সি|ঋণপত্র,MACRO_INDICATOR
+employment,কর্মসংস্থান|বেকারত্ব|চাকরির বাজার,MACRO_INDICATOR
+purchasing power,ক্রয়ক্ষমতা|ক্রয়ক্ষমতা|জীবনযাত্রার ব্যয়|জীবনযাত্রার ব্যয়,MACRO_INDICATOR
+RMG sector,আরএমজি|তৈরি পোশাক খাত|গার্মেন্টস খাত,SECTOR
+banking sector,ব্যাংকিং খাত|ব্যাংক খাত,SECTOR
+energy sector,জ্বালানি খাত|বিদ্যুৎ ও জ্বালানি খাত,SECTOR
+agriculture sector,কৃষি খাত|কৃষিখাত,SECTOR

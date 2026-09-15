@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "programme": "ATN Business & Finance",
+  "target_types": {
+    "MARKET": "stock/capital/commodity market or market-wide index",
+    "SECTOR": "industry such as RMG, banking, agriculture, energy or imports/exports of a named sector",
+    "COMPANY": "a named company, bank or business organization",
+    "REGULATOR": "Bangladesh government economic policy, ministry, central bank, tax/statistics authority or international policy institution",
+    "MACRO_INDICATOR": "GDP, inflation, remittance, reserves, exchange rate, policy rate, employment, purchasing power, aggregate imports/exports or trade balance"
+  },
+  "annotation_statuses": [
+    "labelled",
+    "non_evaluative",
+    "out_of_scope",
+    "review_required"
+  ],
+  "polarity_classes": [
+    "negative",
+    "positive"
+  ],
+  "exclusion_policy": {
+    "non_evaluative": "financially relevant but no evaluative polarity",
+    "out_of_scope": "not financial/economic discourse",
+    "review_required": "ambiguous status, target, span, or polarity; human decision required"
+  }
+}

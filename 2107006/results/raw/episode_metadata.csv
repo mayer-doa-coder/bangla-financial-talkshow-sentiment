@@ -1,0 +1,6 @@
+episode_id,local_path,has_remote_guest,covers_market_news,notes
+ep001,datasets/01.mp3,,,human review required
+ep002,datasets/02.mp3,,,human review required
+ep003,datasets/03.mp3,,,human review required
+ep004,datasets/04.mp3,,,human review required
+ep005,datasets/05.mp3,,,human review required

@@ -1,0 +1,98 @@
+{
+  "backbone": "csebuetnlp/banglabert",
+  "input_mode": "role_turn",
+  "max_len": 256,
+  "turn_classes": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "speaker_classes": [
+    "negative",
+    "mixed",
+    "neutral",
+    "positive"
+  ],
+  "best_aggregation_rule": "hard_vote",
+  "aggregation_rule_selected_on": "train+val speaker units",
+  "speaker_level_selection": [
+    {
+      "rule": "hard_vote",
+      "exact_acc": 0.7521367521367521,
+      "direction_acc": 0.7948717948717948,
+      "stance_corr": 0.7630025714016485,
+      "macro_f1": 0.6132054673721341
+    },
+    {
+      "rule": "dur_weighted",
+      "exact_acc": 0.6581196581196581,
+      "direction_acc": 0.717948717948718,
+      "stance_corr": 0.8319917186785885,
+      "macro_f1": 0.5808719433719434
+    },
+    {
+      "rule": "word_weighted",
+      "exact_acc": 0.6666666666666666,
+      "direction_acc": 0.717948717948718,
+      "stance_corr": 0.839272495789425,
+      "macro_f1": 0.5751518056887184
+    },
+    {
+      "rule": "top_k",
+      "exact_acc": 0.6752136752136753,
+      "direction_acc": 0.717948717948718,
+      "stance_corr": 0.7332159583464329,
+      "macro_f1": 0.5731397306397306
+    },
+    {
+      "rule": "unweighted",
+      "exact_acc": 0.6410256410256411,
+      "direction_acc": 0.7094017094017094,
+      "stance_corr": 0.8694619075325796,
+      "macro_f1": 0.5701863259702074
+    }
+  ],
+  "val_turn_macro_f1": 0.7039268148731064,
+  "test_turn_macro_f1": 0.6696395086344734,
+  "majority_baseline_test_macro_f1": 0.23638778220451528,
+  "speaker_level": [
+    {
+      "rule": "top_k",
+      "exact_acc": 0.8,
+      "direction_acc": 0.8,
+      "stance_corr": 0.6279952997729893,
+      "macro_f1": 0.6666666666666666
+    },
+    {
+      "rule": "hard_vote",
+      "exact_acc": 0.8666666666666667,
+      "direction_acc": 0.8666666666666667,
+      "stance_corr": 0.4512837399379318,
+      "macro_f1": 0.5673758865248226
+    },
+    {
+      "rule": "dur_weighted",
+      "exact_acc": 0.7666666666666667,
+      "direction_acc": 0.8,
+      "stance_corr": 0.567484832765697,
+      "macro_f1": 0.4797979797979798
+    },
+    {
+      "rule": "word_weighted",
+      "exact_acc": 0.7666666666666667,
+      "direction_acc": 0.8,
+      "stance_corr": 0.5688243793352367,
+      "macro_f1": 0.4797979797979798
+    },
+    {
+      "rule": "unweighted",
+      "exact_acc": 0.6333333333333333,
+      "direction_acc": 0.6666666666666666,
+      "stance_corr": 0.6906464159208712,
+      "macro_f1": 0.447209653092006
+    }
+  ],
+  "n_train_turns": 1009,
+  "label_source": "LLM-as-judge (claude-opus-5), no human labels",
+  "caveat": "scores measure agreement with the LLM judge, not with human ground truth"
+}

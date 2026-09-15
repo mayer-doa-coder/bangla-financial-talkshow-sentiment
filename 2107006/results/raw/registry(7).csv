@@ -1,0 +1,6 @@
+episode_id,channel,duration_sec,programme,has_remote_guest,covers_market_news,local_path,sha256,license_attestation,sample_rate,channels,codec,bit_rate_kbps,file_size_bytes,duration_flag,rejection_reason,sha256_verified,notes
+ep001,RTV Business,2015.09,RTV Business Talk,False,False,datasets/01.mp3,4c04b5263b34eacee89ed8ae37a3665700d7bf2cce4bcb75bece8b3fd82c2e1c,UNVERIFIED — must be completed before Stage 4,44100,2,MP3,77,19547526,ok,,True,
+ep002,RTV Business,1810.1,RTV Business Talk,False,False,datasets/02.mp3,1a161e6b88a962bcd554eb8e9bc4af9e78af0b29b4fc1e13a93085a1356928d6,UNVERIFIED — must be completed before Stage 4,44100,2,MP3,79,18049301,ok,,True,
+ep003,RTV Business,2605.09,RTV Business Talk,False,False,datasets/03.mp3,408ffd574c65ed56ecd983404461426af555957ebd43d19d479f355414fc376f,UNVERIFIED — must be completed before Stage 4,44100,2,MP3,192,62522234,ok,,True,
+ep004,RTV Business,1860.23,RTV Business Talk,False,False,datasets/04.mp3,b418070afff744eb699f6661f95465d6732c3238469206bf8799d0b23ec5e480,UNVERIFIED — must be completed before Stage 4,44100,2,MP3,81,18972952,ok,,True,
+ep005,RTV Business,3450.15,RTV Business Talk,False,False,datasets/05.mp3,fd87449f2706a6648f5d91f2058f9da97fc9422d2389224c04fe24e1b18525ec,UNVERIFIED — must be completed before Stage 4,44100,2,MP3,192,82803703,ok,,True,

@@ -1,0 +1,157 @@
+{
+  "submittable": false,
+  "gates": [
+    {
+      "gate": "episode_count",
+      "status": "FAIL",
+      "value": 3,
+      "threshold": ">=8",
+      "reason": ""
+    },
+    {
+      "gate": "programme_count",
+      "status": "FAIL",
+      "value": 3,
+      "threshold": ">=4",
+      "reason": ""
+    },
+    {
+      "gate": "remote_guest_episodes",
+      "status": "FAIL",
+      "value": 0,
+      "threshold": ">=2",
+      "reason": ""
+    },
+    {
+      "gate": "no_synthetic_gold",
+      "status": "PASS",
+      "value": 0,
+      "threshold": "0",
+      "reason": ""
+    },
+    {
+      "gate": "layer1_no_empty_transcript",
+      "status": "FAIL",
+      "value": 0,
+      "threshold": "0 missing",
+      "reason": ""
+    },
+    {
+      "gate": "layer2_no_missing_speaker",
+      "status": "FAIL",
+      "value": 0,
+      "threshold": "0 missing",
+      "reason": ""
+    },
+    {
+      "gate": "layer2_roles_resolved",
+      "status": "FAIL",
+      "value": 0,
+      "threshold": "0 unresolved",
+      "reason": ""
+    },
+    {
+      "gate": "layer3_resolved_or_excluded",
+      "status": "FAIL",
+      "value": 0,
+      "threshold": "0 unresolved",
+      "reason": ""
+    },
+    {
+      "gate": "economic_topic_coverage",
+      "status": "SKIPPED",
+      "value": [],
+      "threshold": ">=4 of 5 target types represented in gold",
+      "reason": ""
+    },
+    {
+      "gate": "no_neutral_class",
+      "status": "PASS",
+      "value": [],
+      "threshold": "positive|negative only",
+      "reason": ""
+    },
+    {
+      "gate": "fusion_no_unassigned_words",
+      "status": "FAIL",
+      "value": 76,
+      "threshold": "0",
+      "reason": ""
+    },
+    {
+      "gate": "wer_measured",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "requires gold transcript",
+      "reason": "add verified gold transcript"
+    },
+    {
+      "gate": "wer_target",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "<=0.30",
+      "reason": ""
+    },
+    {
+      "gate": "der_measured_0.25_collar",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "requires gold RTTM",
+      "reason": ""
+    },
+    {
+      "gate": "der_target",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "<=0.20",
+      "reason": ""
+    },
+    {
+      "gate": "annotation_kappa",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": ">=0.80",
+      "reason": "run agreement_report on two independent annotation files"
+    },
+    {
+      "gate": "public_private_f1_gap",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "<=0.03",
+      "reason": "requires train/public/private group-disjoint evaluation"
+    },
+    {
+      "gate": "sentiment_private_macro_f1",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": ">=0.70",
+      "reason": ""
+    },
+    {
+      "gate": "ntp_curve",
+      "status": "SKIPPED",
+      "value": 0,
+      "threshold": "7 noise levels",
+      "reason": ""
+    },
+    {
+      "gate": "wer_at_or_below_ntp",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "requires measured WER + NTP curve",
+      "reason": ""
+    },
+    {
+      "gate": "proper_noun_recovery_measured",
+      "status": "SKIPPED",
+      "value": null,
+      "threshold": "requires whitelist support in gold",
+      "reason": ""
+    }
+  ],
+  "summary": {
+    "SKIPPED": 11,
+    "FAIL": 8,
+    "PASS": 2
+  }
+}

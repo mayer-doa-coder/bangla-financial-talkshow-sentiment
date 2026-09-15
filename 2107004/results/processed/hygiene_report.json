@@ -1,0 +1,47 @@
+[
+  {
+    "episode_id": "ep004",
+    "source_path": "datasets/অনক করখন বনধ হয়ছ, সমন আরও কঠন পরসথত আসছ_ বটএমএ সভপত Star Biz Dialogue Star News.mp3",
+    "output_path": "data/processed/ep004.wav",
+    "source_sr": 44100,
+    "source_channels": 2,
+    "target_sr": 16000,
+    "duration_sec": 2037.55,
+    "integrated_lufs": -23.018116372113077,
+    "true_peak_dbfs": -0.01,
+    "normalized": false,
+    "gain_db_applied": 0.0,
+    "thumbnail_path": "reports/figures/waveform_ep004.png",
+    "notes": "lufs pre-normalization: -22.23"
+  },
+  {
+    "episode_id": "ep005",
+    "source_path": "datasets/কয়কট বযক বদ বক সব বযকই সকট  ড. তফক আহমদ চধর Stream Talk  Dhaka Stream.mp3",
+    "output_path": "data/processed/ep005.wav",
+    "source_sr": 44100,
+    "source_channels": 2,
+    "target_sr": 16000,
+    "duration_sec": 2097.41,
+    "integrated_lufs": -15.99999992893498,
+    "true_peak_dbfs": -2.44,
+    "normalized": true,
+    "gain_db_applied": -2.64,
+    "thumbnail_path": "reports/figures/waveform_ep005.png",
+    "notes": "lufs pre-normalization: -13.36"
+  },
+  {
+    "episode_id": "ep006",
+    "source_path": "datasets/যকতরষটরর ভমক থকত পর তব চনক বদ দয় রহঙগ সমসযর সমধন হব ন.mp3",
+    "output_path": "data/processed/ep006.wav",
+    "source_sr": 44100,
+    "source_channels": 2,
+    "target_sr": 16000,
+    "duration_sec": 1411.31,
+    "integrated_lufs": -16.626265703350757,
+    "true_peak_dbfs": -0.01,
+    "normalized": false,
+    "gain_db_applied": 0.0,
+    "thumbnail_path": "reports/figures/waveform_ep006.png",
+    "notes": "lufs pre-normalization: -15.49"
+  }
+]

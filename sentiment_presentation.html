@@ -1,0 +1,1126 @@
+<title>Bangla Talk Show Discourse Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Serif+Bengali:wght@400;600&display=swap">
+
+<style>
+:root{
+  --ink:#14181b; --ink-soft:#4b565b; --ink-faint:#78858a;
+  --paper:#eceeeb; --panel:#f8f9f7; --panel-2:#e3e7e3;
+  --line:#cdd4d0; --line-soft:#dde2de;
+  --petrol:#1d4e5f; --signal:#2e8fa3;
+  --neg:#a6423c; --neu:#77827c; --pos:#35735a; --amber:#b5811f;
+  --neg-wash:#f2e0de; --neu-wash:#e6e9e6; --pos-wash:#dde9e2; --amber-wash:#f5ead2;
+  --code-bg:#1a2226; --code-ink:#dfe7e6; --code-com:#7f9a9c;
+  --stage-edge:#c3cbc6;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#e4e9e6; --ink-soft:#a4b0ae; --ink-faint:#7d8a88;
+    --paper:#0e1216; --panel:#181f24; --panel-2:#202930;
+    --line:#2f3a41; --line-soft:#252e34;
+    --petrol:#7fc2cf; --signal:#4fb6c9;
+    --neg:#e08b83; --neu:#9aa8a3; --pos:#74c39d; --amber:#e0b25f;
+    --neg-wash:#37211f; --neu-wash:#232b2a; --pos-wash:#1a2f26; --amber-wash:#332916;
+    --code-bg:#0c1114; --code-ink:#d5dedd; --code-com:#6c8688;
+    --stage-edge:#28323a;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e4e9e6; --ink-soft:#a4b0ae; --ink-faint:#7d8a88;
+  --paper:#0e1216; --panel:#181f24; --panel-2:#202930;
+  --line:#2f3a41; --line-soft:#252e34;
+  --petrol:#7fc2cf; --signal:#4fb6c9;
+  --neg:#e08b83; --neu:#9aa8a3; --pos:#74c39d; --amber:#e0b25f;
+  --neg-wash:#37211f; --neu-wash:#232b2a; --pos-wash:#1a2f26; --amber-wash:#332916;
+  --code-bg:#0c1114; --code-ink:#d5dedd; --code-com:#6c8688;
+  --stage-edge:#28323a;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{transition:none!important}}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  margin:0; -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- 16:9 page frame ---------- */
+/* Every page is authored on a fixed 1280 x 720 canvas and scaled to the
+   viewport, so the aspect ratio is exactly 16:9 at any window size. */
+.deck{max-width:1280px; margin:0 auto; padding:60px 24px 72px; display:flex; flex-direction:column; gap:26px}
+.stage{
+  width:100%; aspect-ratio:16 / 9; position:relative; overflow:hidden;
+  background:var(--paper); border:1px solid var(--stage-edge); scroll-margin-top:56px;
+}
+.slide{
+  position:absolute; top:0; left:0; width:1280px; height:720px;
+  transform-origin:top left; padding:46px 54px; display:flex; flex-direction:column;
+  font-size:15px; line-height:1.55;
+}
+.pagenum{
+  position:absolute; right:54px; bottom:26px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em; color:var(--ink-faint);
+}
+
+.rail{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  background:color-mix(in srgb, var(--paper) 90%, transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+}
+.rail-in{max-width:1280px; margin:0 auto; padding:9px 24px; display:flex; align-items:center; gap:18px}
+.rail-id{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); white-space:nowrap;
+}
+.rail-id b{color:var(--petrol); font-weight:600}
+.ticks{display:flex; gap:3px; flex:1; align-items:flex-end; height:20px}
+.tick{flex:1; height:7px; background:var(--line); border:0; padding:0; border-radius:1px; cursor:pointer; transition:height .16s ease, background .16s ease}
+.tick:hover{background:var(--signal); height:14px}
+.tick.on{background:var(--petrol); height:20px}
+.tick:focus-visible{outline:2px solid var(--signal); outline-offset:2px}
+.rail-hint{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-faint); white-space:nowrap}
+
+.snum{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600;
+  letter-spacing:.14em; color:var(--signal); display:block; margin-bottom:8px;
+}
+h1,h2,h3{font-family:Archivo,"IBM Plex Sans",sans-serif; text-wrap:balance; margin:0}
+h1{font-size:52px; font-weight:700; letter-spacing:-.032em; line-height:1.05}
+h2{font-size:31px; font-weight:600; letter-spacing:-.022em; line-height:1.14; margin-bottom:10px}
+h3{font-size:14px; font-weight:600; margin-bottom:7px}
+p{margin:0 0 11px; max-width:70ch}
+.lede{font-size:16.5px; color:var(--ink-soft); max-width:88ch; margin-bottom:14px}
+.small{font-size:13px; color:var(--ink-soft); line-height:1.5}
+strong{font-weight:600}
+ul{margin:0 0 10px; padding-left:18px}
+li{margin-bottom:5px; font-size:13px; color:var(--ink-soft); line-height:1.5}
+li::marker{color:var(--ink-faint)}
+
+.title-slide{justify-content:center}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--petrol); margin-bottom:16px;
+}
+.title-meta{display:flex; flex-wrap:wrap; gap:0 44px; margin-top:26px; padding-top:18px; border-top:2px solid var(--petrol)}
+.tm dt{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:3px}
+.tm dd{margin:0; font-size:14px; font-weight:500}
+
+.strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); border:1px solid var(--line); background:var(--panel); margin:0 0 16px}
+.strip div{padding:12px 14px; border-right:1px solid var(--line-soft)}
+.strip div:last-child{border-right:0}
+.strip b{display:block; font-family:Archivo,sans-serif; font-size:23px; font-weight:600; letter-spacing:-.02em; font-variant-numeric:tabular-nums; line-height:1.1}
+.strip span{display:block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-top:4px}
+
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:30px; align-items:start}
+.cols-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; align-items:start}
+.cols.wide-left{grid-template-columns:1.15fr 1fr}
+
+.panel{background:var(--panel); border:1px solid var(--line); padding:15px 17px}
+.panel.flag{border-left:3px solid var(--amber)}
+.panel.good{border-left:3px solid var(--pos)}
+.panel.bad{border-left:3px solid var(--neg)}
+.panel.key{border-left:3px solid var(--petrol)}
+.panel h3{margin-top:0}
+.panel p:last-child,.panel ul:last-child{margin-bottom:0}
+
+.cfg{font-family:"IBM Plex Mono",monospace; font-size:11.5px; line-height:1.6}
+.cfg div{display:flex; justify-content:space-between; gap:12px; padding:3px 0; border-bottom:1px solid var(--line-soft)}
+.cfg div:last-child{border-bottom:0}
+.cfg dt{color:var(--ink-faint)}
+.cfg dd{margin:0; text-align:right; font-variant-numeric:tabular-nums}
+
+pre{
+  background:var(--code-bg); color:var(--code-ink); margin:0 0 12px; padding:13px 15px;
+  overflow:hidden; border:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace; font-size:11.4px; line-height:1.6;
+}
+code{font-family:"IBM Plex Mono",monospace}
+p code,li code,td code{background:var(--panel-2); padding:1px 4px; border-radius:2px; color:var(--ink); font-size:11.6px}
+pre .c{color:var(--code-com)}
+.codelabel{font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:5px; display:block}
+
+table{border-collapse:collapse; width:100%; font-size:13px}
+th,td{text-align:left; padding:6.5px 11px; border-bottom:1px solid var(--line-soft)}
+th{font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right; font-variant-numeric:tabular-nums; font-family:"IBM Plex Mono",monospace}
+tbody tr:last-child td{border-bottom:0}
+tr.hi td{background:var(--panel-2); font-weight:600}
+
+.bn{font-family:"Noto Serif Bengali","Noto Sans Bengali",serif; font-size:15.5px; line-height:1.9}
+.quote{background:var(--panel); border-left:3px solid var(--signal); padding:12px 15px; margin:0 0 11px}
+.quote .gloss{font-size:12.5px; color:var(--ink-soft); margin:6px 0 0; font-family:"IBM Plex Sans",sans-serif; line-height:1.5}
+.tgt{background:var(--amber-wash); padding:0 3px; border-radius:2px}
+.cue-n{color:var(--neg); font-weight:600}
+.cue-p{color:var(--pos); font-weight:600}
+
+.chip{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; padding:2px 6px; border-radius:2px; white-space:nowrap}
+.chip.neg{background:var(--neg-wash); color:var(--neg)}
+.chip.neu{background:var(--neu-wash); color:var(--neu)}
+.chip.pos{background:var(--pos-wash); color:var(--pos)}
+.chip.amb{background:var(--amber-wash); color:var(--amber)}
+
+.cm{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; width:auto}
+.cm th,.cm td{border:1px solid var(--line); padding:7px 12px; text-align:center}
+.cm td{font-variant-numeric:tabular-nums; font-size:14px; font-weight:500}
+.cm th{font-size:9.5px; text-transform:uppercase; letter-spacing:.07em; background:var(--panel)}
+.cm th.rh{text-align:right; background:var(--panel)}
+.cm td.d{background:var(--pos-wash); font-weight:600}
+.cm td.e1{background:var(--neg-wash)}
+.cm td.e2{background:var(--amber-wash)}
+
+.bars{display:flex; flex-direction:column; gap:10px; margin:4px 0 6px}
+.bar-row{display:grid; grid-template-columns:158px 1fr 58px; gap:10px; align-items:center}
+.bar-track{position:relative; height:20px; background:var(--panel-2); border:1px solid var(--line-soft)}
+.bar-track::after{content:""; position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--line)}
+.bar-fill{height:100%; background:var(--petrol)}
+.bar-fill.alt{background:var(--signal)}
+.bar-fill.pending{background:repeating-linear-gradient(45deg,var(--line),var(--line) 4px,transparent 4px,transparent 8px); border-right:1px dashed var(--ink-faint)}
+.bar-val{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:12px; text-align:right}
+.bar-name{font-size:12.5px}
+.axis{display:grid; grid-template-columns:158px 1fr 58px; gap:10px; font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:var(--ink-faint)}
+.axis-in{display:flex; justify-content:space-between}
+
+.diagram{width:100%; height:auto; display:block}
+.d-box{fill:var(--panel); stroke:var(--petrol); stroke-width:1.4}
+.d-label{fill:var(--ink); font-family:"IBM Plex Sans",sans-serif; font-size:14px; font-weight:600}
+.d-sub{fill:var(--ink-faint); font-family:"IBM Plex Mono",monospace; font-size:10.5px}
+.d-num{fill:var(--signal); font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600}
+.d-band{fill:var(--ink-faint); font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em}
+.d-arrow{stroke:var(--petrol); stroke-width:1.4; fill:none}
+
+.note{font-size:12.5px; color:var(--ink-soft); border-top:1px solid var(--line-soft); padding-top:10px; margin-top:auto}
+.rank{display:flex; gap:12px; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line-soft)}
+.rank:last-child{border-bottom:0}
+.rank-n{font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600; color:var(--signal); flex:none; width:18px}
+.rank-b{flex:1}
+.rank-b strong{font-size:14px}
+.rank-b p{margin:2px 0 0; font-size:12.5px; color:var(--ink-soft); max-width:none; line-height:1.45}
+.rank-tag{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); flex:none}
+</style>
+
+<nav class="rail" aria-label="Slide navigation">
+  <div class="rail-in">
+    <div class="rail-id">CSE 4112 <b id="cur">01</b>/18</div>
+    <div class="ticks" id="ticks"></div>
+    <div class="rail-hint">arrow keys</div>
+  </div>
+</nav>
+
+<div class="deck" id="deck">
+
+<!-- 1 -->
+<div class="stage" id="s1"><section class="slide title-slide">
+  <div class="eyebrow">Machine Learning Laboratory</div>
+  <h1>Speaker-Attributed Financial<br>Discourse Analysis of<br>Bangla Talk Shows</h1>
+  <p class="lede" style="margin-top:20px; font-size:18px">One pipeline from raw broadcast audio to a polarity judgement about a named financial target: who spoke, what they said, and how they judged the economy.</p>
+  <dl class="title-meta">
+    <div class="tm"><dt>Rolls</dt><dd>2107001, 2107004, 2107006, 2107009, 2107010, 2107015</dd></div>
+    <div class="tm"><dt>Diarization</dt><dd>pyannote speaker-diarization-community-1</dd></div>
+    <div class="tm"><dt>Speech recognition</dt><dd>Whisper medium, Bengali adapted</dd></div>
+    <div class="tm"><dt>Sentiment</dt><dd>BanglaBERT</dd></div>
+  </dl>
+  <div class="pagenum">01</div>
+</section></div>
+
+<!-- 2 -->
+<div class="stage" id="s2"><section class="slide">
+  <span class="snum">01 / THE DATA</span>
+  <h2>Bangla business talk shows, collected as whole episodes</h2>
+  <p class="lede">Long-form broadcast panel discussion is the hard case for speech systems: several speakers, crosstalk, studio music, phone-in guests, and code switching into English mid sentence.</p>
+
+  <div class="strip">
+    <div><b>26</b><span>Episodes</span></div>
+    <div><b>16.88</b><span>Hours</span></div>
+    <div><b>1,867</b><span>Speaker turns</span></div>
+    <div><b>130,750</b><span>Words</span></div>
+    <div><b>3,532</b><span>Utterances</span></div>
+    <div><b>6</b><span>Contributors</span></div>
+  </div>
+
+  <div class="cols" style="margin-top:4px">
+    <div>
+      <h3>Corpus composition</h3>
+      <table>
+        <thead><tr><th>Roll</th><th class="n">Episodes</th><th class="n">Words</th><th>Programmes</th></tr></thead>
+        <tbody>
+          <tr><td>2107001</td><td class="n">4</td><td class="n">21,500</td><td class="small">Business Talk, ATN</td></tr>
+          <tr><td>2107004</td><td class="n">6</td><td class="n">29,383</td><td class="small">Star Biz, Dhaka Stream</td></tr>
+          <tr><td>2107006</td><td class="n">5</td><td class="n">25,736</td><td class="small">RTV Business Talk</td></tr>
+          <tr><td>2107009</td><td class="n">5</td><td class="n">23,447</td><td class="small">Money Talks, Desh TV</td></tr>
+          <tr><td>2107010</td><td class="n">1</td><td class="n">2,960</td><td class="small">Star Biz Dialogue</td></tr>
+          <tr><td>2107015</td><td class="n">5</td><td class="n">27,724</td><td class="small">ATN, Gtv</td></tr>
+          <tr class="hi"><td>Total</td><td class="n">26</td><td class="n">130,750</td><td class="small">16.88 hours</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3>Why this audio is difficult</h3>
+      <ul>
+        <li>Panel format, so two people frequently talk over each other</li>
+        <li>Studio stings and background music between segments</li>
+        <li>Guests joining by phone at much lower bandwidth</li>
+        <li>Heavy code switching: English finance terms inside Bangla sentences, for example <span class="bn">রেভিনিউ</span> and <span class="bn">ফিসকাল পলিসি</span></li>
+        <li>Episodes run 24 to 48 minutes, far past what a speech model reads in one pass</li>
+      </ul>
+      <div class="panel key">
+        <p class="small" style="margin-bottom:0">Episode identifiers are namespaced by roll, so ep001 from one contributor and ep001 from another stay distinct, and speaker identities are never merged across recordings.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">02</div>
+</section></div>
+
+<!-- 3 -->
+<div class="stage" id="s3"><section class="slide">
+  <span class="snum">02 / ARCHITECTURE</span>
+  <h2>Five stages, each writing output the next one reads</h2>
+  <p class="lede">Nothing is held in memory between stages. Every stage writes durable structured output, so any single stage can be rerun, audited or replaced without touching the ones before it.</p>
+
+  <svg class="diagram" viewBox="0 0 1172 250" role="img" aria-label="Five stage pipeline: audio conditioning, speaker diarization, long form speech recognition, word to speaker fusion, target aware sentiment.">
+    <text class="d-band" x="0" y="14">SPEECH PROCESSING</text>
+    <text class="d-band" x="718" y="14" style="fill:var(--signal)">LANGUAGE PROCESSING</text>
+    <line x1="0" y1="22" x2="700" y2="22" stroke="var(--line)" stroke-width="1"/>
+    <line x1="718" y1="22" x2="1172" y2="22" stroke="var(--signal)" stroke-width="1"/>
+
+    <rect class="d-box" x="0" y="42" width="211" height="78"/>
+    <text class="d-num" x="16" y="63">STAGE 1</text>
+    <text class="d-label" x="16" y="85">Audio conditioning</text>
+    <text class="d-sub" x="16" y="103">16 kHz mono, R128</text>
+
+    <rect class="d-box" x="240" y="42" width="211" height="78"/>
+    <text class="d-num" x="256" y="63">STAGE 2</text>
+    <text class="d-label" x="256" y="85">Diarization</text>
+    <text class="d-sub" x="256" y="103">1,867 speaker turns</text>
+
+    <rect class="d-box" x="480" y="42" width="211" height="78"/>
+    <text class="d-num" x="496" y="63">STAGE 3</text>
+    <text class="d-label" x="496" y="85">Speech recognition</text>
+    <text class="d-sub" x="496" y="103">130,750 words</text>
+
+    <rect class="d-box" x="720" y="42" width="211" height="78"/>
+    <text class="d-num" x="736" y="63">STAGE 4</text>
+    <text class="d-label" x="736" y="85">Fusion</text>
+    <text class="d-sub" x="736" y="103">3,532 utterances</text>
+
+    <rect class="d-box" x="960" y="42" width="212" height="78"/>
+    <text class="d-num" x="976" y="63">STAGE 5</text>
+    <text class="d-label" x="976" y="85">Target sentiment</text>
+    <text class="d-sub" x="976" y="103">3,109 target pairs</text>
+
+    <path class="d-arrow" d="M211 81 L236 81"/><path class="d-arrow" d="M230 76 l8 5 -8 5"/>
+    <path class="d-arrow" d="M451 81 L476 81"/><path class="d-arrow" d="M470 76 l8 5 -8 5"/>
+    <path class="d-arrow" d="M691 81 L716 81"/><path class="d-arrow" d="M710 76 l8 5 -8 5"/>
+    <path class="d-arrow" d="M931 81 L956 81"/><path class="d-arrow" d="M950 76 l8 5 -8 5"/>
+
+    <line x1="0" y1="156" x2="1172" y2="156" stroke="var(--line-soft)" stroke-width="1"/>
+    <text class="d-sub" x="0" y="182">Diarization runs on the whole episode and does not depend on the transcript.</text>
+    <text class="d-sub" x="0" y="204">Speech recognition runs in 28 second chunks and does not depend on the speaker labels.</text>
+    <text class="d-sub" x="0" y="226">Fusion is the only stage that needs both, which is why its errors are the ones that compound.</text>
+  </svg>
+  <div class="pagenum">03</div>
+</section></div>
+
+<!-- 4 -->
+<div class="stage" id="s4"><section class="slide">
+  <span class="snum">03 / STAGE 1, AUDIO</span>
+  <h2>Getting broadcast audio into a state a model can read</h2>
+  <p class="lede">Both speech models expect 16 kHz mono at a predictable loudness. Broadcast MP3 is none of those things, and levels vary widely from one channel to another.</p>
+
+  <div class="cols" style="margin-top:6px">
+    <div>
+      <h3>Conditioning settings</h3>
+      <dl class="cfg panel" style="padding:12px 16px">
+        <div><dt>source rate</dt><dd>44.1 and 48 kHz</dd></div>
+        <div><dt>source channels</dt><dd>2, stereo</dd></div>
+        <div><dt>target rate</dt><dd>16 kHz mono</dd></div>
+        <div><dt>loudness standard</dt><dd>EBU R128 integrated</dd></div>
+        <div><dt>loudness target</dt><dd>-16 LUFS</dd></div>
+        <div><dt>measured range</dt><dd>-28.3 to -16.0 LUFS</dd></div>
+        <div><dt>true peak guard</dt><dd>checked before gain</dd></div>
+        <div><dt>random seed</dt><dd>17, fixed</dd></div>
+      </dl>
+    </div>
+
+    <div>
+      <h3>Gain is applied selectively, not to everything</h3>
+      <p class="small">An episode is changed only when it is genuinely off target and the true peak leaves headroom. Roughly one third of measured episodes needed adjustment and the rest were left alone. Normalising everything blindly would clip the loud ones and introduce distortion the speech models would then have to work around.</p>
+
+      <div class="panel key">
+        <h3>Why this matters downstream</h3>
+        <p class="small" style="margin-bottom:0">Diarization clusters speaker embeddings by distance. If one episode arrives 12 dB quieter than another, the embeddings shift and a clustering threshold that worked on one recording stops working on the next. Fixing loudness first is what lets a single threshold setting apply across the whole corpus.</p>
+      </div>
+
+      <div class="panel">
+        <p class="small" style="margin-bottom:0">Loudness before and after is recorded per episode, and every model is pinned to an exact revision, so the run can be repeated and compared rather than only described.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">04</div>
+</section></div>
+
+<!-- 5 -->
+<div class="stage" id="s5"><section class="slide">
+  <span class="snum">04 / STAGE 2, DIARIZATION</span>
+  <h2>Deciding who is speaking, before knowing what was said</h2>
+
+  <div class="cols" style="margin-top:6px">
+    <div>
+      <h3>Configuration</h3>
+      <dl class="cfg panel" style="padding:12px 16px">
+        <div><dt>backbone</dt><dd>pyannote community-1</dd></div>
+        <div><dt>embedding</dt><dd>wespeaker resnet34-LM</dd></div>
+        <div><dt>min_duration_off</dt><dd>0.1 s</dd></div>
+        <div><dt>min_cluster_size</dt><dd>20</dd></div>
+        <div><dt>minimum segment</dt><dd>0.75 s</dd></div>
+        <div><dt>stitch gap</dt><dd>0.17 s</dd></div>
+        <div><dt>merge threshold</dt><dd>3.79</dd></div>
+        <div><dt>minimum speaker airtime</dt><dd>9.0 s</dd></div>
+        <div><dt>scoring collar</dt><dd>0.25 s</dd></div>
+      </dl>
+      <p class="small">The default embedding is swapped for wespeaker resnet34-LM, which separates voices better on noisy broadcast audio than the stock model.</p>
+    </div>
+
+    <div>
+      <div class="strip" style="grid-template-columns:1fr 1fr 1fr">
+        <div><b>1,867</b><span>speaker turns</span></div>
+        <div><b>3</b><span>median speakers</span></div>
+        <div><b>1 to 7</b><span>speaker range</span></div>
+      </div>
+      <h3>What the post-processing is for</h3>
+      <ul>
+        <li>Segments under 0.75 s are dropped, so a cough or a jingle does not become a speaker</li>
+        <li>Gaps under 0.17 s are stitched, so one sentence does not split into three turns</li>
+        <li>Any speaker with under 9 s of total airtime is deleted, which removes spurious clusters</li>
+        <li>Both the raw and the post-processed output are kept, so the effect of each threshold can be inspected rather than assumed</li>
+      </ul>
+      <div class="panel flag">
+        <p class="small" style="margin-bottom:0"><strong>No diarization error rate is reported.</strong> That metric needs a human made reference of who spoke when, and none exists for this corpus. Scoring the output against itself would be meaningless, so the number is left blank rather than estimated.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">05</div>
+</section></div>
+
+<!-- 6 -->
+<div class="stage" id="s6"><section class="slide">
+  <span class="snum">05 / STAGE 3, SPEECH RECOGNITION</span>
+  <h2>Transcribing 40 minute episodes with a 30 second model</h2>
+  <p class="lede">Whisper reads a fixed 30 second window. Every long-form Bangla system is therefore really a chunking and stitching problem wrapped around a short-context model.</p>
+
+  <div class="cols wide-left" style="margin-top:4px">
+    <div>
+      <h3>Decoding configuration</h3>
+      <dl class="cfg panel" style="padding:12px 16px">
+        <div><dt>checkpoint</dt><dd>Whisper medium, Bengali adapted</dd></div>
+        <div><dt>runtime</dt><dd>CTranslate2, float16, GPU</dd></div>
+        <div><dt>language</dt><dd>bn, forced</dd></div>
+        <div><dt>chunk length</dt><dd>28.0 s</dd></div>
+        <div><dt>beam size</dt><dd>5</dd></div>
+        <div><dt>condition_on_previous_text</dt><dd>False</dd></div>
+        <div><dt>source separation</dt><dd>automatic, on detection</dd></div>
+      </dl>
+      <div class="strip" style="grid-template-columns:1fr 1fr 1fr; margin-top:14px">
+        <div><b>2,184</b><span>chunks decoded</span></div>
+        <div><b>4,006</b><span>segments</span></div>
+        <div><b>130,750</b><span>words</span></div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Why each setting is set that way</h3>
+      <ul>
+        <li><strong>28 s rather than 30 s</strong> leaves headroom inside the receptive field, so the window edge never lands exactly at the model limit</li>
+        <li><strong>Language forced to Bengali</strong> stops the detector switching to Hindi or Assamese on a noisy chunk</li>
+        <li><strong>No conditioning on previous text</strong> stops a hallucination in one chunk being fed as context into the next, which is how one error becomes a whole bad minute</li>
+        <li><strong>Source separation on detection</strong> measures spectral flux per chunk and separates music only when it is actually present, rather than degrading clean speech</li>
+      </ul>
+      <div class="panel key">
+        <p class="small" style="margin-bottom:0">A Bengali adapted checkpoint matters for the financial vocabulary. It produces <span class="bn">মূল্যস্ফীতি</span>, <span class="bn">খেলাপি ঋণ</span> and <span class="bn">বৈদেশিক মুদ্রার রিজার্ভ</span> as clean tokens rather than phonetic approximations, and the whole downstream lexicon depends on that.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">06</div>
+</section></div>
+
+<!-- 7 -->
+<div class="stage" id="s7"><section class="slide">
+  <span class="snum">06 / TRANSCRIPT QUALITY</span>
+  <h2>Two defects, found by reading the output rather than trusting it</h2>
+
+  <div class="cols" style="margin-top:6px">
+    <div>
+      <div class="panel flag">
+        <h3>Chunk boundary truncation <span class="chip amb">400 of 3,532</span></h3>
+        <p class="small">Bangla never begins a word with a dependent vowel sign. When a segment does, the stitcher has eaten the opening consonant. That makes this a mechanical test, not a judgement call.</p>
+        <div class="quote" style="margin-bottom:0">
+          <div class="bn">ুক্তা উন্নতি লক্ষ্য করা যাচ্ছে</div>
+          <p class="gloss">The word should be কিছুটা. The first token of 11.3 percent of utterances is not a real word.</p>
+        </div>
+      </div>
+      <div class="panel good" style="margin-top:12px">
+        <h3>Fix</h3>
+        <p class="small" style="margin-bottom:0">Chunks are currently cut back to back with no overlap. Cutting them with a 2 to 3 second overlap and stitching on the shared region removes the boundary word entirely. This is a rerun setting, not new code.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel flag">
+        <h3>Decoder repetition loops <span class="chip amb">46 of 3,532</span></h3>
+        <p class="small">The decoder locks onto one token and emits it for many seconds. Detected by the longest run of a repeated token, and by lexical variety across a long span.</p>
+        <div class="quote" style="margin-bottom:0">
+          <div class="bn">বাজার বাজার বাজার বাজার বাজার বাজার</div>
+          <p class="gloss">These carry no readable meaning, so they are dropped from supervision rather than quietly labelled neutral.</p>
+        </div>
+      </div>
+      <div class="panel bad" style="margin-top:12px">
+        <h3>Likely cause, and it is in the configuration</h3>
+        <p class="small" style="margin-bottom:0">The run sets a repetition penalty of 0.8. A penalty above 1.0 suppresses tokens already produced. A value below 1.0 does the opposite and makes repeating them more likely. Raising it above 1.0, or adding a no repeat constraint, is the direct fix.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Neither defect appeared in any summary report. Both were found by printing actual segments and reading them, which is the argument for looking at your data: the pipeline reported success at every stage while writing 400 broken first words.</p>
+  <div class="pagenum">07</div>
+</section></div>
+
+<!-- 8 -->
+<div class="stage" id="s8"><section class="slide">
+  <span class="snum">07 / STAGE 4, FUSION</span>
+  <h2>Attaching every word to a speaker</h2>
+  <p class="lede">Diarization gives time intervals with speaker labels. Speech recognition gives words with timestamps. Neither knows about the other, so fusion decides which speaker owns each word.</p>
+
+  <div class="cols" style="margin-top:4px">
+    <div>
+      <h3>The assignment rule</h3>
+      <ul>
+        <li>Take the midpoint of the word. If it falls inside one speaker interval, that speaker owns the word</li>
+        <li>If the midpoint falls in a gap, fall back to the interval with the largest overlap</li>
+        <li>If two speakers overlap in time, the one who started first keeps the word, so no word is counted twice</li>
+        <li>Consecutive words from the same speaker are grouped into an utterance, which becomes the unit everything downstream works on</li>
+      </ul>
+      <p class="small">The midpoint is used rather than the word start because start timestamps drift at chunk boundaries and the midpoint is the more stable of the two.</p>
+      <div class="strip" style="grid-template-columns:1fr 1fr">
+        <div><b>3,532</b><span>utterances</span></div>
+        <div><b>99.5%</b><span>words attributed</span></div>
+      </div>
+    </div>
+
+    <div>
+      <h3>What an utterance carries forward</h3>
+      <pre>{
+  "utterance_id": "ep002_utt00003",
+  "speaker_id": 0,
+  "start_sec": 35.20,
+  "end_sec":   62.94,
+  "text_normalized": "...",
+  "words": [ ... ]
+}</pre>
+      <div class="panel key">
+        <p class="small" style="margin-bottom:0">Speaker, timing and text travel together from here on. That is what lets a polarity result be traced back to a specific person at a specific second of a specific episode, rather than to the episode as a whole.</p>
+      </div>
+      <div class="panel">
+        <p class="small" style="margin-bottom:0">Attribution coverage is 99.5 percent across the rolls with diarization completed. Coverage means a word was attached to an automatic speaker interval. It is not a claim that the speaker is correct, which would need a human reference.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">08</div>
+</section></div>
+
+<!-- 9 -->
+<div class="stage" id="s9"><section class="slide">
+  <span class="snum">08 / STAGE 5, TARGETS</span>
+  <h2>Finding what a sentence is actually about</h2>
+  <p class="lede">Sentiment is meaningless without a target. Before polarity can be assigned, the system finds the financial thing being discussed, and Bangla morphology makes that harder than a string match.</p>
+
+  <div class="cols" style="margin-top:4px">
+    <div>
+      <h3>Stem prefix matching, not exact strings</h3>
+      <p class="small">Bangla attaches case and definiteness as suffixes. The word for bank appears as six tokens. Exact matching sees six unrelated words, a stem prefix sees one target.</p>
+      <table>
+        <thead><tr><th>Surface form</th><th class="n">Count</th></tr></thead>
+        <tbody>
+          <tr><td class="bn">ব্যাংক</td><td class="n">164</td></tr>
+          <tr><td class="bn">ব্যাংকের</td><td class="n">139</td></tr>
+          <tr><td class="bn">ব্যাংকিং</td><td class="n">99</td></tr>
+          <tr><td class="bn">ব্যাংকে</td><td class="n">50</td></tr>
+          <tr><td class="bn">ব্যাংকগুলো</td><td class="n">10</td></tr>
+          <tr><td class="bn">ব্যাংকগুলোর</td><td class="n">10</td></tr>
+          <tr class="hi"><td>one stem covers</td><td class="n">555</td></tr>
+        </tbody>
+      </table>
+      <p class="small">A prefix rule is blunt, so each entry carries an exclusion list. Without one, the interest rate target <span class="bn">সুদ</span> fires on the country name <span class="bn">সুদান</span>.</p>
+    </div>
+
+    <div>
+      <h3>Lexicon coverage</h3>
+      <div class="strip" style="grid-template-columns:1fr 1fr">
+        <div><b>52</b><span>targets</span></div>
+        <div><b>3,109</b><span>target pairs</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Type</th><th class="n">Pairs</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td>MACRO_INDICATOR</td><td class="n">1,121</td><td class="small bn">মূল্যস্ফীতি, রিজার্ভ</td></tr>
+          <tr><td>REGULATOR</td><td class="n">980</td><td class="small bn">বাংলাদেশ ব্যাংক, বাজেট</td></tr>
+          <tr><td>SECTOR</td><td class="n">901</td><td class="small bn">গ্যাস, কৃষি, শিল্প</td></tr>
+          <tr><td>MARKET</td><td class="n">107</td><td class="small bn">শেয়ারবাজার, পুঁজিবাজার</td></tr>
+        </tbody>
+      </table>
+      <div class="panel key">
+        <p class="small" style="margin-bottom:0">One utterance produces one row per distinct target it mentions, so a sentence naming both inflation and reserves is scored twice, once for each.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">09</div>
+</section></div>
+
+<!-- 10 -->
+<div class="stage" id="s10"><section class="slide">
+  <span class="snum">09 / THE POLARITY IDEA</span>
+  <h2>A rising number is not good or bad until you know what is rising</h2>
+  <p class="lede">This is the decision that makes the task financial rather than generic. Ordinary sentiment analysis treats an increase word as positive. In economic talk that is wrong about half the time.</p>
+
+  <div class="cols" style="margin-top:6px">
+    <div class="panel good">
+      <div class="quote" style="border-left-color:var(--pos); margin-bottom:10px">
+        <div class="bn">বৈদেশিক মুদ্রার <span class="tgt">রিজার্ভ</span> <span class="cue-p">বেড়েছে</span></div>
+        <p class="gloss">Foreign exchange reserves have increased.</p>
+      </div>
+      <p class="small" style="margin-bottom:0">Reserves carry orientation <code>+1</code>. The increase cue keeps its sign. Result <span class="chip pos">positive</span></p>
+    </div>
+    <div class="panel bad">
+      <div class="quote" style="border-left-color:var(--neg); margin-bottom:10px">
+        <div class="bn"><span class="tgt">মূল্যস্ফীতি</span> <span class="cue-n">বেড়েছে</span></div>
+        <p class="gloss">Inflation has increased.</p>
+      </div>
+      <p class="small" style="margin-bottom:0">Inflation carries orientation <code>-1</code>. The same cue flips. Result <span class="chip neg">negative</span></p>
+    </div>
+  </div>
+
+  <div class="cols-3" style="margin-top:16px">
+    <div class="panel">
+      <h3>Orientation <span class="chip pos">+1</span></h3>
+      <p class="small" style="margin-bottom:0">14 targets where a rise is good news: reserves, remittance, GDP, exports, investment, employment, revenue, output, purchasing power, the market index.</p>
+    </div>
+    <div class="panel">
+      <h3>Orientation <span class="chip neg">-1</span></h3>
+      <p class="small" style="margin-bottom:0">9 targets where a rise is bad news: inflation, consumer prices, bad loans, foreign debt, capital flight, the policy rate, public spending, imports.</p>
+    </div>
+    <div class="panel">
+      <h3>Orientation <span class="chip neu">0</span></h3>
+      <p class="small" style="margin-bottom:0">29 entity targets such as banks, the government or the energy sector. A rise means nothing on its own, so these are scored only by evaluative words.</p>
+    </div>
+  </div>
+
+  <p class="note">Because each target is scored separately, one sentence can carry two labels at once. In this corpus a single utterance is <span class="chip neg">negative</span> about inflation and <span class="chip pos">positive</span> about reserves in the same breath. A sentence level model cannot represent that.</p>
+  <div class="pagenum">10</div>
+</section></div>
+
+<!-- 11 -->
+<div class="stage" id="s11"><section class="slide">
+  <span class="snum">10 / SUPERVISION</span>
+  <h2>Creating labels that can be traced back to words</h2>
+  <p class="lede">A written rule set is used rather than a black box, so every training label can be explained by the exact tokens that produced it.</p>
+
+  <div class="cols" style="margin-top:4px">
+    <div>
+      <span class="codelabel">scoring one target in one utterance</span>
+      <pre><span class="c"># every cue token within 12 tokens of the target</span>
+polarity = cue.polarity
+<span class="c"># direction words depend on the target</span>
+if cue.kind == "direction":
+    if orientation == 0: skip
+    polarity *= orientation
+<span class="c"># adjectives and verbs can be negated, nouns cannot</span>
+if cue.negatable and negator within 3 tokens:
+    polarity *= -1
+<span class="c"># nearer evidence counts for more</span>
+decay = 1 / (1 + distance / 4)
+score += polarity * cue.weight * decay</pre>
+      <p class="small">Above <code>+0.55</code> is positive, below <code>-0.55</code> is negative, anything between is non evaluative. The cue set holds 104 stems, each with a weight and a negation flag.</p>
+    </div>
+
+    <div>
+      <h3>Two corrections found by reading the output</h3>
+      <div class="panel flag" style="margin-bottom:11px">
+        <p class="small" style="margin-bottom:7px"><strong>Negation has scope.</strong> A first version flipped any cue near a negator and scored crisis as positive.</p>
+        <div class="quote" style="margin:0">
+          <div class="bn">সংকট কাটছে <span class="cue-n">না</span></div>
+          <p class="gloss">The crisis is not passing. The না negates the verb, not the noun, and it is still bad news. Only adjectives and verbs are now marked negatable.</p>
+        </div>
+      </div>
+      <div class="panel flag">
+        <p class="small" style="margin-bottom:7px"><strong>Bangla builds a negated verb complex.</strong> The particle can sit three tokens from the word it negates.</p>
+        <div class="quote" style="margin:0">
+          <div class="bn">স্থিতিশীল করতে পারবেন <span class="cue-n">না</span></div>
+          <p class="gloss">You will not be able to stabilise it. Scored positive until the negation window was widened to three.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip" style="margin-top:14px">
+    <div><b>3,019</b><span>training labels</span></div>
+    <div><b>284</b><span>negative, 9.4%</span></div>
+    <div><b>2,583</b><span>non evaluative, 85.6%</span></div>
+    <div><b>152</b><span>positive, 5.0%</span></div>
+  </div>
+  <div class="pagenum">11</div>
+</section></div>
+
+<!-- 12 -->
+<div class="stage" id="s12"><section class="slide">
+  <span class="snum">11 / SPLIT</span>
+  <h2>Split by episode, never by row</h2>
+
+  <div class="cols" style="margin-top:6px">
+    <div>
+      <p class="small">Two utterances from the same talk show share the panel, the topic, the host's phrasing and the same recognition error pattern. If rows from one episode land in both training and test, the model can recognise the episode instead of the sentiment, and the score will not repeat on a new recording.</p>
+      <p class="small">So all four test episodes are held out whole. They were chosen to carry as much of the hand read reference set as possible, which is why the final number is measured on human labels from recordings the model never saw.</p>
+      <div class="panel key">
+        <p class="small" style="margin-bottom:0">The split asserts that no episode appears in more than one partition, so a careless edit fails loudly instead of quietly inflating the score.</p>
+      </div>
+      <div class="panel" style="margin-top:11px">
+        <p class="small" style="margin-bottom:0">Validation is used only to pick the stopping epoch and is never fitted on. Because the reference slice inside validation is small, model selection uses the rule label agreement score, which is the honest consequence of having limited human labels.</p>
+      </div>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Split</th><th class="n">Episodes</th><th class="n">Pairs</th><th class="n">Human</th><th class="n">Neg</th><th class="n">Non</th><th class="n">Pos</th></tr></thead>
+        <tbody>
+          <tr><td>Train</td><td class="n">19</td><td class="n">2,026</td><td class="n">99</td><td class="n">164</td><td class="n">1,771</td><td class="n">91</td></tr>
+          <tr><td>Validation</td><td class="n">3</td><td class="n">320</td><td class="n">22</td><td class="n">24</td><td class="n">278</td><td class="n">18</td></tr>
+          <tr class="hi"><td>Test</td><td class="n">4</td><td class="n">673</td><td class="n">59</td><td class="n">96</td><td class="n">534</td><td class="n">43</td></tr>
+        </tbody>
+      </table>
+      <div class="panel good" style="margin-top:14px">
+        <h3>Why not a random row split</h3>
+        <p class="small" style="margin-bottom:0">A random split over 3,019 rows would place utterances from the same recording on both sides. The reported score would rise, and none of that rise would survive contact with a new episode. The episode split is the harder and the honest measurement.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">12</div>
+</section></div>
+
+<!-- 13 -->
+<div class="stage" id="s13"><section class="slide">
+  <span class="snum">12 / CODE, PREPROCESS AND LABEL</span>
+  <h2>Preprocessing and label creation</h2>
+
+  <div class="cols">
+    <div>
+      <span class="codelabel">transcript defect detection</span>
+      <pre><span class="c"># A word may never begin with a dependent sign.</span>
+<span class="c"># When a segment does, the stitcher ate a consonant.</span>
+def leading_truncated(text):
+    s = text.lstrip()
+    return bool(s) and s[0] in COMBINING
+
+<span class="c"># Longest run of one token, plus lexical variety.</span>
+<span class="c"># The run catches a single repeated token, the</span>
+<span class="c"># ratio catches an alternating loop.</span>
+def repetition_score(text):
+    t = text.split()
+    longest = run = 1
+    for i in range(1, len(t)):
+        run = run + 1 if t[i] == t[i-1] else 1
+        longest = max(longest, run)
+    return longest, len(set(t)) / len(t)
+
+is_loop = (longest &gt;= 4
+           or (words &gt;= 20 and ratio &lt; 0.35))</pre>
+    </div>
+
+    <div>
+      <span class="codelabel">target aware polarity scoring</span>
+      <pre>for i, (_, _, token) in enumerate(spans):
+    distance = min(abs(i - t) for t in target_idx)
+    if distance &gt; WINDOW:
+        continue
+    ...
+    polarity = cue["polarity"]
+    if cue["kind"] == "direction":
+        <span class="c"># A rise is only good or bad</span>
+        <span class="c"># relative to what is rising.</span>
+        if orientation == 0:
+            continue
+        polarity *= orientation
+
+    <span class="c"># Negation flips only what can be negated,</span>
+    <span class="c"># and only when the particle is adjacent.</span>
+    negated = False
+    if cue["negatable"]:
+        tail = {spans[j][2] for j in
+                range(i + 1, min(i + 4, len(spans)))}
+        negated = bool(tail &amp; NEGATORS)
+        if negated:
+            polarity *= -1
+
+    decay = 1.0 / (1.0 + distance / 4.0)
+    score += polarity * cue["weight"] * decay</pre>
+    </div>
+  </div>
+  <p class="note">Rows flagged as repetition loops, and rows under six words, are excluded from supervision rather than silently labelled neutral. That is 90 of 3,109 pairs.</p>
+  <div class="pagenum">13</div>
+</section></div>
+
+<!-- 14 -->
+<div class="stage" id="s14"><section class="slide">
+  <span class="snum">13 / CODE, SPLIT AND TRAIN</span>
+  <h2>Split, train, validate, test</h2>
+
+  <div class="cols">
+    <div>
+      <span class="codelabel">episode level split with a leak check</span>
+      <pre>for row in rows:
+    ep = row["global_episode"]
+    name = ("test" if ep in TEST_EPISODES
+            else "val" if ep in VAL_EPISODES
+            else "train")
+    splits[name].append(row)
+
+<span class="c"># A leak check is cheap and catches a bad edit.</span>
+train_eps = {r["global_episode"]
+             for r in splits["train"]}
+for name in ("val", "test"):
+    overlap = train_eps &amp; {r["global_episode"]
+                           for r in splits[name]}
+    assert not overlap, f"{name} shares episodes"</pre>
+
+      <span class="codelabel">baseline classifier</span>
+      <pre>Pipeline([
+  <span class="c"># char n-grams survive recognition errors:</span>
+  <span class="c"># a misspelt word still shares a substring</span>
+  ("tfidf", TfidfVectorizer(analyzer="char_wb",
+      ngram_range=(3, 5), min_df=3,
+      sublinear_tf=True)),
+  <span class="c"># 86% of rows are non evaluative. Unweighted,</span>
+  <span class="c"># the model predicts that class for everything.</span>
+  ("clf", LogisticRegression(max_iter=2000, C=4.0,
+      class_weight="balanced")),
+])</pre>
+    </div>
+
+    <div>
+      <span class="codelabel">banglabert sentence pair fine tune</span>
+      <pre><span class="c"># Sentence pair is what makes the task</span>
+<span class="c"># target aware rather than sentence level:</span>
+<span class="c">#   [CLS] target [SEP] utterance [SEP]</span>
+enc = tokenizer(target_text(row), row["text"],
+                truncation=True, max_length=128,
+                padding="max_length")
+
+weights = counts.sum() / (len(LABELS) * counts)
+loss_fn = CrossEntropyLoss(weight=weights)
+
+for epoch in range(1, args.epochs + 1):
+    model.train()
+    for batch in train_loader:
+        loss = loss_fn(model(**batch).logits, labels)
+        loss.backward()
+        clip_grad_norm_(model.parameters(), 1.0)
+        optimizer.step(); scheduler.step()
+        optimizer.zero_grad()
+
+    <span class="c"># validation picks the stopping epoch</span>
+    val = evaluate(model, val_rows)
+    if val &gt; best:
+        best = val
+        save(model)
+
+<span class="c"># headline number: human labels, on episodes</span>
+<span class="c"># the model never saw</span>
+test_score = evaluate(model, test_rows, "human")</pre>
+    </div>
+  </div>
+  <div class="pagenum">14</div>
+</section></div>
+
+<!-- 15 -->
+<div class="stage" id="s15"><section class="slide">
+  <span class="snum">14 / METRICS</span>
+  <h2>Which numbers are reported, and why those</h2>
+  <p class="lede">The class balance decides the metric. With 85.6 percent of rows in one class, the obvious metric is actively misleading, so it is not used as the headline.</p>
+
+  <div class="cols-3" style="margin-top:6px">
+    <div class="panel bad">
+      <h3>Plain accuracy, rejected</h3>
+      <p class="small" style="margin-bottom:0">A model that answers non evaluative every single time scores <strong>85.6 percent</strong> on this corpus and has learned nothing. Accuracy is reported next to the others for completeness, never on its own.</p>
+    </div>
+    <div class="panel good">
+      <h3>Macro F1, the headline</h3>
+      <p class="small" style="margin-bottom:0">Averages F1 over the three classes with equal weight, so the 152 positive rows count as much as the 2,583 neutral ones. The all neutral model scores <strong>0.31</strong> here, which is what makes the metric useful.</p>
+    </div>
+    <div class="panel">
+      <h3>Per class precision and recall</h3>
+      <p class="small" style="margin-bottom:0">Macro F1 hides which class is broken. Splitting it out is what revealed that positive precision is the real weakness, at <strong>0.417</strong> across the full reference set.</p>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top:16px">
+    <div class="panel">
+      <h3>Cohen kappa</h3>
+      <p class="small" style="margin-bottom:0">Agreement corrected for what two raters would hit by chance alone. On the 180 reference pairs the rule set reaches <strong>0.392</strong>, which is fair agreement, not good agreement. Raw agreement of 59.4 percent would sound far better than it is.</p>
+    </div>
+    <div class="panel">
+      <h3>Confusion matrix</h3>
+      <p class="small" style="margin-bottom:0">The only view that says which direction the errors run. A single F1 cannot tell a model that misses negatives apart from one that invents positives. Here it showed both, in very different amounts.</p>
+    </div>
+  </div>
+
+  <p class="note">Deliberately not reported: word error rate, diarization error rate, and speaker attribution accuracy. Each needs a human made reference, and this project has none. Word to speaker coverage is reported instead, and is clearly labelled as coverage rather than accuracy.</p>
+  <div class="pagenum">15</div>
+</section></div>
+
+<!-- 16 -->
+<div class="stage" id="s16"><section class="slide">
+  <span class="snum">15 / RESULTS</span>
+  <h2>Measured against 180 transcripts read by hand</h2>
+  <p class="lede">A stratified sample of 180 target pairs was read in context and labelled by hand. 59 of them fall inside the held out test episodes.</p>
+
+  <div class="cols" style="margin-top:4px">
+    <div>
+      <h3>Macro F1 on the 59 held out pairs</h3>
+      <div class="bars">
+        <div class="bar-row">
+          <span class="bar-name">Always non evaluative</span>
+          <div class="bar-track"><div class="bar-fill" style="width:17.7%; background:var(--neu)"></div></div>
+          <span class="bar-val">0.177</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-name">Char n-gram baseline</span>
+          <div class="bar-track"><div class="bar-fill alt" style="width:46.6%"></div></div>
+          <span class="bar-val">0.466</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-name">Rule labeller</span>
+          <div class="bar-track"><div class="bar-fill" style="width:56.6%"></div></div>
+          <span class="bar-val">0.566</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-name">BanglaBERT pair model</span>
+          <div class="bar-track"><div class="bar-fill pending" style="width:100%"></div></div>
+          <span class="bar-val">not run</span>
+        </div>
+      </div>
+      <div class="axis"><span></span><div class="axis-in"><span>0.0</span><span>0.5</span><span>1.0</span></div><span></span></div>
+
+      <div class="panel bad" style="margin-top:16px">
+        <h3>The result that matters</h3>
+        <p class="small" style="margin-bottom:0">The trained model scores <strong>below the rule set that generated its training labels</strong>, 0.466 against 0.566. A student trained on noisy labels will not beat its teacher unless it can generalise past the teacher's mistakes, and on 2,026 rows with only 91 positive examples it cannot.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3>Rule labeller, per class, all 180 pairs</h3>
+      <table>
+        <thead><tr><th>Class</th><th class="n">Prec</th><th class="n">Rec</th><th class="n">F1</th><th class="n">n</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip neg">negative</span></td><td class="n">0.850</td><td class="n">0.607</td><td class="n">0.708</td><td class="n">84</td></tr>
+          <tr><td><span class="chip neu">non eval</span></td><td class="n">0.517</td><td class="n">0.484</td><td class="n">0.500</td><td class="n">64</td></tr>
+          <tr><td><span class="chip pos">positive</span></td><td class="n">0.417</td><td class="n">0.781</td><td class="n">0.543</td><td class="n">32</td></tr>
+          <tr class="hi"><td>macro average</td><td class="n">0.594</td><td class="n">0.624</td><td class="n">0.584</td><td class="n">180</td></tr>
+        </tbody>
+      </table>
+      <p class="small">Accuracy 0.594. Cohen kappa 0.392.</p>
+
+      <h3 style="margin-top:12px">Confusion, rows are human labels</h3>
+      <table class="cm">
+        <thead><tr><th></th><th>said neg</th><th>said non</th><th>said pos</th></tr></thead>
+        <tbody>
+          <tr><th class="rh">is negative</th><td class="d">51</td><td class="e1">22</td><td class="e1">11</td></tr>
+          <tr><th class="rh">is non eval</th><td class="e2">9</td><td class="d">31</td><td class="e1">24</td></tr>
+          <tr><th class="rh">is positive</th><td>0</td><td class="e2">7</td><td class="d">25</td></tr>
+        </tbody>
+      </table>
+      <p class="small">Negative precision is high at 0.850, so when it says negative it is usually right. The damage sits in the top right: 33 genuinely negative or neutral pairs were called positive.</p>
+    </div>
+  </div>
+  <div class="pagenum">16</div>
+</section></div>
+
+<!-- 17 -->
+<div class="stage" id="s17"><section class="slide">
+  <span class="snum">16 / ERROR ANALYSIS</span>
+  <h2>Why the number is low, checked rather than guessed</h2>
+
+  <div class="cols-3" style="margin-top:6px">
+    <div>
+      <h3>The five error modes</h3>
+      <table>
+        <thead><tr><th>Human</th><th>System</th><th class="n">n</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip neu">non</span></td><td><span class="chip pos">pos</span></td><td class="n">24</td></tr>
+          <tr><td><span class="chip neg">neg</span></td><td><span class="chip neu">non</span></td><td class="n">22</td></tr>
+          <tr><td><span class="chip neg">neg</span></td><td><span class="chip pos">pos</span></td><td class="n">11</td></tr>
+          <tr><td><span class="chip neu">non</span></td><td><span class="chip neg">neg</span></td><td class="n">9</td></tr>
+          <tr><td><span class="chip pos">pos</span></td><td><span class="chip neu">non</span></td><td class="n">7</td></tr>
+        </tbody>
+      </table>
+      <div class="panel key" style="margin-top:12px">
+        <h3>The structural cause</h3>
+        <p class="small" style="margin-bottom:0">Class imbalance. 85.6 percent of rows are non evaluative and only 91 positive examples reach training. That is far too few for a 110 million parameter model, and thin even for logistic regression.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel bad">
+        <h3>Largest: advice read as praise</h3>
+        <p class="small" style="margin-bottom:8px">24 errors. A speaker says what should happen, and the rule set counts the good word as a judgement about the present.</p>
+        <div class="quote" style="margin:0">
+          <div class="bn">অর্থনীতি <span class="cue-p">স্থিতিশীল</span> করতে হবে</div>
+          <p class="gloss">The economy must be stabilised. A demand, not a compliment.</p>
+        </div>
+      </div>
+      <div class="panel bad" style="margin-top:12px">
+        <h3>Negation carried by a suffix</h3>
+        <p class="small" style="margin-bottom:8px">Bangla negates the past tense by attaching <span class="bn">নি</span> to the verb, so there is no separate particle to find.</p>
+        <div class="quote" style="margin:0">
+          <div class="bn">বাজেট বাস্তবায়ন হয়<span class="cue-n">নি</span></div>
+          <p class="gloss">The budget was not implemented. The system sees implementation and answers positive.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel bad">
+        <h3>Negative meaning, no cue word</h3>
+        <p class="small" style="margin-bottom:8px">22 errors. The cue set holds 104 stems. Plain Bangla carries bad news without using any of them.</p>
+        <div class="quote" style="margin:0">
+          <div class="bn">বিনিয়োগ বাইশ পয়েন্ট চার পার্সেন্টে নেমে গেছে</div>
+          <p class="gloss">Investment has come down to 22.4 percent. Clearly negative, and not one word is in the cue list.</p>
+        </div>
+      </div>
+      <div class="panel key" style="margin-top:12px">
+        <h3>The obvious suspect, ruled out</h3>
+        <table style="margin-top:6px">
+          <thead><tr><th>Stratum</th><th class="n">n</th><th class="n">F1</th></tr></thead>
+          <tbody>
+            <tr><td>Cleaner transcripts</td><td class="n">90</td><td class="n">0.550</td></tr>
+            <tr><td>Noisier transcripts</td><td class="n">90</td><td class="n">0.619</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin:8px 0 0">The cleaner half scores no better. At this sample size the gap is inside the noise, so the label rules, not the transcripts, are the bottleneck.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pagenum">17</div>
+</section></div>
+
+<!-- 18 -->
+<div class="stage" id="s18"><section class="slide">
+  <span class="snum">17 / IMPROVING IT</span>
+  <h2>Ranked by expected gain per hour of work</h2>
+
+  <div style="margin-top:8px">
+    <div class="rank">
+      <span class="rank-n">1</span>
+      <div class="rank-b">
+        <strong>Label 800 to 1,000 pairs by hand, with two annotators</strong>
+        <p>The single biggest lever, and it removes the ceiling rather than raising it. Training on real labels instead of rule output means the model is no longer bounded by the teacher. Two annotators also give an agreement score on the labels themselves. Six members at roughly 150 pairs each is one working session.</p>
+      </div>
+      <span class="rank-tag">Highest gain</span>
+    </div>
+    <div class="rank">
+      <span class="rank-n">2</span>
+      <div class="rank-b">
+        <strong>Correct the two recognition settings</strong>
+        <p>Raise the repetition penalty above 1.0, or add a no repeat constraint, to stop the decoder loops. Cut the 28 second chunks with a 2 to 3 second overlap and stitch on the shared region, which removes the truncated first word from 11.3 percent of utterances. Both are configuration changes that clean the input for every later stage.</p>
+      </div>
+      <span class="rank-tag">Upstream</span>
+    </div>
+    <div class="rank">
+      <span class="rank-n">3</span>
+      <div class="rank-b">
+        <strong>Separate prescription from evaluation</strong>
+        <p>The largest single error class, 24 of 73. Bangla marks obligation with a small closed set of endings, chiefly <span class="bn">করতে হবে</span>, <span class="bn">উচিত</span>, <span class="bn">দরকার</span> and <span class="bn">প্রয়োজন</span>. Detecting those and suppressing the polarity claim is a short rule, not a research problem.</p>
+      </div>
+      <span class="rank-tag">Cheap and large</span>
+    </div>
+    <div class="rank">
+      <span class="rank-n">4</span>
+      <div class="rank-b">
+        <strong>Handle the suffix negation</strong>
+        <p>Matching a verb final <span class="bn">নি</span> catches a class of sign flips that currently go straight into the training labels, because the negation window has no separate token to see.</p>
+      </div>
+      <span class="rank-tag">Cheap</span>
+    </div>
+    <div class="rank">
+      <span class="rank-n">5</span>
+      <div class="rank-b">
+        <strong>Train the sentence pair model, then widen the corpus</strong>
+        <p>The training code is written and the checkpoint loads. It reads whole phrases rather than character n-grams, so it can learn that a fall in investment is bad without that phrase sitting in a cue list. Worth running once the real labels exist. After that, 26 episodes is simply a small corpus, and the pipeline runs end to end on new material without a code change.</p>
+      </div>
+      <span class="rank-tag">After step 1</span>
+    </div>
+  </div>
+  <div class="pagenum">18</div>
+</section></div>
+
+</div>
+
+<script>
+(function () {
+  var stages = Array.prototype.slice.call(document.querySelectorAll(".stage"));
+  var ticks = document.getElementById("ticks");
+  var cur = document.getElementById("cur");
+
+  // Each page is authored on a fixed 1280 x 720 canvas, then scaled to
+  // whatever width the frame actually gets, so the ratio stays exactly 16:9.
+  function fit() {
+    stages.forEach(function (st) {
+      var slide = st.firstElementChild;
+      slide.style.transform = "scale(" + (st.clientWidth / 1280) + ")";
+    });
+  }
+  fit();
+  window.addEventListener("resize", fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+  stages.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.className = "tick";
+    b.type = "button";
+    b.setAttribute("aria-label", "Go to slide " + (i + 1) + " of " + stages.length);
+    b.addEventListener("click", function () { s.scrollIntoView({ block: "start" }); });
+    ticks.appendChild(b);
+  });
+  var els = Array.prototype.slice.call(ticks.children);
+
+  var active = -1;
+  function mark(i) {
+    if (i === active) return;
+    active = i;
+    els.forEach(function (e, n) { e.classList.toggle("on", n === i); });
+    cur.textContent = String(i + 1).padStart(2, "0");
+  }
+  mark(0);
+
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) mark(stages.indexOf(en.target));
+      });
+    }, { rootMargin: "-40% 0px -45% 0px" });
+    stages.forEach(function (s) { io.observe(s); });
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target.tagName;
+    if (t === "INPUT" || t === "TEXTAREA") return;
+    var next = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown") next = active + 1;
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp") next = active - 1;
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = stages.length - 1;
+    if (next === null) return;
+    next = Math.max(0, Math.min(stages.length - 1, next));
+    e.preventDefault();
+    stages[next].scrollIntoView({ block: "start" });
+  });
+})();
+</script>

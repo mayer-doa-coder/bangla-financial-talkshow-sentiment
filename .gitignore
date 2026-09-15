@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------- source audio
+# Third-party copyrighted broadcast material. Section 13 of the report commits to
+# NOT redistributing it; registry.csv carries channel, title, duration and SHA-256
+# so any user can obtain the same episodes independently.
+*.mp3
+*.wav
+*.mpeg
+*.m4a
+*.mp4
+*.opus
+*.aac
+*.webm
+
+# ----------------------------------------------------- oversized model weights
+# GitHub rejects blobs over 100 MB. The fine-tuned checkpoint is reproducible
+# from Speaker_Sentiment_BanglaBERT.ipynb in ~10 min on a T4.
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+
+# ------------------------------------------------------------------ build junk
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+report_latex/build/
+.DS_Store
+Thumbs.db

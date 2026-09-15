@@ -1,0 +1,15 @@
+# UI and tabular presentation
+# 6.22 uses Starlette's current HTTP 422 constant. Older 6.x releases emit a
+# StarletteDeprecationWarning for every successful queued UI request.
+gradio>=6.22,<7
+pandas>=2.2,<4
+plotly>=5.24,<7
+
+# Fast Bangla lexical matching and portable ffmpeg audio clips
+rapidfuzz>=3.9,<4
+imageio-ffmpeg>=0.5,<1
+
+# Semantic retrieval. Colab normally satisfies torch without downloading it again.
+torch>=2.4,<3
+# Gradio 6.22 and Transformers 5.x share the Hugging Face Hub 1.x stack.
+transformers>=5.15,<6

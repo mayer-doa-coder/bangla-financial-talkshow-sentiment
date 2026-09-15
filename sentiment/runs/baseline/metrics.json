@@ -1,0 +1,43 @@
+{
+ "model": "tfidf_char35_logreg",
+ "n_train": 2026,
+ "val_silver_macro_f1": 0.5159,
+ "val_gold_macro_f1": 0.5746,
+ "val_gold_n": 22,
+ "test_silver_macro_f1": 0.5256,
+ "test_gold_macro_f1": 0.4664,
+ "test_gold_n": 59,
+ "test_gold_report": {
+  "negative": {
+   "precision": 0.7692307692307693,
+   "recall": 0.30303030303030304,
+   "f1-score": 0.43478260869565216,
+   "support": 33.0
+  },
+  "non_evaluative": {
+   "precision": 0.325,
+   "recall": 0.8125,
+   "f1-score": 0.4642857142857143,
+   "support": 16.0
+  },
+  "positive": {
+   "precision": 0.6666666666666666,
+   "recall": 0.4,
+   "f1-score": 0.5,
+   "support": 10.0
+  },
+  "accuracy": 0.4576271186440678,
+  "macro avg": {
+   "precision": 0.586965811965812,
+   "recall": 0.5051767676767677,
+   "f1-score": 0.4663561076604555,
+   "support": 59.0
+  },
+  "weighted avg": {
+   "precision": 0.6313776618861365,
+   "recall": 0.4576271186440678,
+   "f1-score": 0.4538372460258975,
+   "support": 59.0
+  }
+ }
+}

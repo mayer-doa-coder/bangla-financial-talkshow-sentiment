@@ -1,0 +1,53 @@
+canonical,target_type,stems,exclude,orientation,source
+national economy,MACRO_INDICATOR,অর্থনীতি|অর্থনৈতিক,,0,expanded
+inflation,MACRO_INDICATOR,মূল্যস্ফীতি|মুদ্রাস্ফীতি|দ্রব্যমূল্য,,-1,base
+GDP,MACRO_INDICATOR,জিডিপি|মোট দেশজ উৎপাদন,,1,base
+CPI,MACRO_INDICATOR,সিপিআই|ভোক্তা মূল্যসূচক,,-1,base
+remittance,MACRO_INDICATOR,রেমিট্যান্স|রেমিটেন্স|রেমিটার্স|রেমিট্যান্সের|প্রবাসী আয়|রেমিটেন,,1,base
+foreign exchange reserves,MACRO_INDICATOR,রিজার্ভ|বৈদেশিক মুদ্রার মজুত|বৈদেশিক মুদ্রার রিজার্ভ,,1,base
+exchange rate,MACRO_INDICATOR,ডলার|বিনিময় হার|টাকার দর|টাকার মান,ডলারা,0,base
+policy rate,MACRO_INDICATOR,সুদের হার|সুদহার|নীতি সুদহার|রেপো রেট|সুদ,সুদান|সুদ্দিন,-1,base
+economic growth,MACRO_INDICATOR,প্রবৃদ্ধি,,1,expanded
+employment,MACRO_INDICATOR,কর্মসংস্থান|বেকারত্ব|চাকরির বাজার,,1,base
+imports,MACRO_INDICATOR,আমদানি,,-1,base
+exports,MACRO_INDICATOR,রপ্তানি|রফতানি,,1,base
+trade balance,MACRO_INDICATOR,বাণিজ্য ঘাটতি|বাণিজ্য ভারসাম্য|ট্রেড ব্যালেন্স,,0,base
+letter of credit,MACRO_INDICATOR,এলসি|ঋণপত্র,,1,base
+purchasing power,MACRO_INDICATOR,ক্রয়ক্ষমতা|জীবনযাত্রার ব্যয়|জীবনযাত্রার মান,,1,base
+investment,MACRO_INDICATOR,বিনিয়োগ,,1,expanded
+non-performing loans,MACRO_INDICATOR,খেলাপি|ঋণখেলাপি,,-1,expanded
+credit,MACRO_INDICATOR,ঋণ,ঋণখেলাপি|ঋণপত্র,0,expanded
+government revenue,MACRO_INDICATOR,রাজস্ব,,1,expanded
+consumer prices,MACRO_INDICATOR,দ্রব্যের দাম|জিনিসের দাম|দাম,,-1,expanded
+production output,MACRO_INDICATOR,উৎপাদন,,1,expanded
+public expenditure,MACRO_INDICATOR,সরকারি ব্যয়|উন্নয়ন ব্যয়|ব্যয়,,-1,expanded
+foreign debt,MACRO_INDICATOR,বৈদেশিক ঋণ|বিদেশি ঋণ,,-1,expanded
+capital flight,MACRO_INDICATOR,অর্থ পাচার|পাচার,,-1,expanded
+capital market,MARKET,শেয়ারবাজার|পুঁজিবাজার|শেয়ার বাজার|পুঁজি বাজার,,1,expanded
+stock,MARKET,শেয়ার,শেয়ারবাজার,1,expanded
+DSEX,MARKET,ডিএসইএক্স|ডিএসই|শেয়ার সূচক|সূচক,,1,base
+commodity market,MARKET,বাজার,বাজারজাত,0,expanded
+banking sector,SECTOR,ব্যাংকিং খাত|ব্যাংক খাত|ব্যাংকিং,,0,base
+banks,SECTOR,ব্যাংক,ব্যাংকিং,0,expanded
+RMG sector,SECTOR,আরএমজি|তৈরি পোশাক|গার্মেন্টস|পোশাক খাত|পোশাক,,0,base
+energy sector,SECTOR,জ্বালানি|বিদ্যুৎ ও জ্বালানি খাত,,0,base
+gas supply,SECTOR,গ্যাস,,0,expanded
+electricity,SECTOR,বিদ্যুৎ,,0,expanded
+agriculture sector,SECTOR,কৃষি,,0,base
+industry,SECTOR,শিল্প|কারখানা,,0,expanded
+business community,SECTOR,ব্যবসায়ী|ব্যবসা,,0,expanded
+SME,SECTOR,এসএমই|ক্ষুদ্র ও মাঝারি|ক্ষুদ্র উদ্যোক্তা,,0,expanded
+Bangladesh Bank,REGULATOR,বাংলাদেশ ব্যাংক|কেন্দ্রীয় ব্যাংক,,0,base
+Government of Bangladesh,REGULATOR,সরকার|অন্তর্বর্তী সরকার|বাংলাদেশ সরকার,,0,base
+NBR,REGULATOR,এনবিআর|এন বি আর|জাতীয় রাজস্ব বোর্ড,,0,base
+BSEC,REGULATOR,বিএসইসি|বি এস ই সি|সিকিউরিটিজ কমিশন,,0,base
+BBS,REGULATOR,বিবিএস|বি বি এস|পরিসংখ্যান ব্যুরো,,0,base
+Ministry of Finance,REGULATOR,অর্থ মন্ত্রণালয়|অর্থ উপদেষ্টা|অর্থমন্ত্রী,,0,base
+Planning Commission,REGULATOR,পরিকল্পনা কমিশন,,0,base
+IMF,REGULATOR,আইএমএফ|আই এম এফ|আন্তর্জাতিক মুদ্রা তহবিল,,0,base
+World Bank,REGULATOR,বিশ্বব্যাংক|বিশ্ব ব্যাংক,,0,base
+ADB,REGULATOR,এডিবি|এ ডি বি|এশীয় উন্নয়ন ব্যাংক,,0,base
+national budget,REGULATOR,বাজেট,,0,expanded
+monetary policy,REGULATOR,মুদ্রানীতি,,0,expanded
+VAT,REGULATOR,ভ্যাট|মূল্য সংযোজন কর,,0,expanded
+tax policy,REGULATOR,আয়কর|করনীতি|করের হার|করহার|শুল্ক|কর ব্যবস্থা,,0,expanded

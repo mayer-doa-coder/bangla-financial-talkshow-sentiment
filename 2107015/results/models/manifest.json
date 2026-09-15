@@ -1,0 +1,23 @@
+[
+  {
+    "name": "pyannote-community-1-wespeaker",
+    "hf_uri": "pyannote/speaker-diarization-community-1",
+    "commit_hash": "",
+    "notes": "Backbone pyannote/speaker-diarization-community-1 + wespeaker-voxceleb-resnet34-LM embedding swap-in; min_duration_off=0.1s; min_cluster_size=20. Fallback to VAD pseudo-diarization when HF_TOKEN absent.",
+    "added_at": "2026-08-10T18:10:16.624454+00:00"
+  },
+  {
+    "name": "whisper-bn",
+    "hf_uri": "/content/bangla_financial_runtime/tugstugi-medium-ct2-da605cc1",
+    "commit_hash": "",
+    "notes": "faster-whisper ASR; device=cuda compute=float16 chunk=28.0s beam=5 rep_pen=0.8 cond_prev=False demucs=auto",
+    "added_at": "2026-08-10T23:11:57.491791+00:00"
+  },
+  {
+    "name": "pyannote-community-1-wespeaker",
+    "hf_uri": "pyannote/speaker-diarization-community-1",
+    "commit_hash": "",
+    "notes": "Backbone pyannote/speaker-diarization-community-1 + wespeaker-voxceleb-resnet34-LM embedding swap-in; min_duration_off=0.1s; min_cluster_size=20. Fallback to VAD pseudo-diarization when HF_TOKEN absent.",
+    "added_at": "2026-08-11T07:25:49.572580+00:00"
+  }
+]

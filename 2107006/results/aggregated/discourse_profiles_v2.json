@@ -1,0 +1,279 @@
+{
+  "schema_version": "2.0",
+  "speaker_ids_episode_local": true,
+  "episodes": [
+    {
+      "episode_id": "ep001",
+      "label_tier": "llm_weak_exploratory",
+      "speakers": [
+        {
+          "speaker_id": -1,
+          "role_tag": "host",
+          "n_labelled_targets": 39,
+          "positive": 9,
+          "negative": 30,
+          "positive_rate": 0.23076923076923078,
+          "labelled_airtime_sec": 473.0799999999999,
+          "target_counts": {
+            "REGULATOR": 26,
+            "MACRO_INDICATOR": 7,
+            "SECTOR": 3,
+            "MARKET": 2,
+            "COMPANY": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "COMPANY",
+              "polarity": "negative",
+              "n": 1
+            },
+            {
+              "target_type": "MACRO_INDICATOR",
+              "polarity": "negative",
+              "n": 5
+            },
+            {
+              "target_type": "MACRO_INDICATOR",
+              "polarity": "positive",
+              "n": 2
+            },
+            {
+              "target_type": "MARKET",
+              "polarity": "negative",
+              "n": 2
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 19
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "positive",
+              "n": 7
+            },
+            {
+              "target_type": "SECTOR",
+              "polarity": "negative",
+              "n": 3
+            }
+          ]
+        },
+        {
+          "speaker_id": 0,
+          "role_tag": "panellist",
+          "n_labelled_targets": 21,
+          "positive": 3,
+          "negative": 18,
+          "positive_rate": 0.14285714285714285,
+          "labelled_airtime_sec": 294.00000000000006,
+          "target_counts": {
+            "REGULATOR": 11,
+            "SECTOR": 4,
+            "MACRO_INDICATOR": 4,
+            "MARKET": 2
+          },
+          "target_polarity": [
+            {
+              "target_type": "MACRO_INDICATOR",
+              "polarity": "negative",
+              "n": 4
+            },
+            {
+              "target_type": "MARKET",
+              "polarity": "negative",
+              "n": 1
+            },
+            {
+              "target_type": "MARKET",
+              "polarity": "positive",
+              "n": 1
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 9
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "positive",
+              "n": 2
+            },
+            {
+              "target_type": "SECTOR",
+              "polarity": "negative",
+              "n": 4
+            }
+          ]
+        },
+        {
+          "speaker_id": 1,
+          "role_tag": "panellist",
+          "n_labelled_targets": 2,
+          "positive": 0,
+          "negative": 2,
+          "positive_rate": 0.0,
+          "labelled_airtime_sec": 10.899999999999864,
+          "target_counts": {
+            "MACRO_INDICATOR": 1,
+            "REGULATOR": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "MACRO_INDICATOR",
+              "polarity": "negative",
+              "n": 1
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 1
+            }
+          ]
+        }
+      ],
+      "n_utterances": 284,
+      "annotation_status_counts": {
+        "labelled": 56,
+        "non_evaluative": 197,
+        "out_of_scope": 31
+      }
+    },
+    {
+      "episode_id": "ep002",
+      "label_tier": "llm_weak_exploratory",
+      "speakers": [
+        {
+          "speaker_id": -1,
+          "role_tag": "host",
+          "n_labelled_targets": 4,
+          "positive": 0,
+          "negative": 4,
+          "positive_rate": 0.0,
+          "labelled_airtime_sec": 100.62000000000003,
+          "target_counts": {
+            "MACRO_INDICATOR": 2,
+            "SECTOR": 1,
+            "REGULATOR": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "MACRO_INDICATOR",
+              "polarity": "negative",
+              "n": 2
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 1
+            },
+            {
+              "target_type": "SECTOR",
+              "polarity": "negative",
+              "n": 1
+            }
+          ]
+        },
+        {
+          "speaker_id": 0,
+          "role_tag": "panellist",
+          "n_labelled_targets": 7,
+          "positive": 0,
+          "negative": 7,
+          "positive_rate": 0.0,
+          "labelled_airtime_sec": 169.42000000000007,
+          "target_counts": {
+            "REGULATOR": 6,
+            "MACRO_INDICATOR": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "MACRO_INDICATOR",
+              "polarity": "negative",
+              "n": 1
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 6
+            }
+          ]
+        },
+        {
+          "speaker_id": 1,
+          "role_tag": "panellist",
+          "n_labelled_targets": 1,
+          "positive": 0,
+          "negative": 1,
+          "positive_rate": 0.0,
+          "labelled_airtime_sec": 27.620000000000005,
+          "target_counts": {
+            "REGULATOR": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 1
+            }
+          ]
+        },
+        {
+          "speaker_id": 2,
+          "role_tag": "host",
+          "n_labelled_targets": 7,
+          "positive": 1,
+          "negative": 6,
+          "positive_rate": 0.14285714285714285,
+          "labelled_airtime_sec": 173.51999999999998,
+          "target_counts": {
+            "REGULATOR": 4,
+            "SECTOR": 2,
+            "COMPANY": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "COMPANY",
+              "polarity": "positive",
+              "n": 1
+            },
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 4
+            },
+            {
+              "target_type": "SECTOR",
+              "polarity": "negative",
+              "n": 2
+            }
+          ]
+        },
+        {
+          "speaker_id": 3,
+          "role_tag": "panellist",
+          "n_labelled_targets": 1,
+          "positive": 0,
+          "negative": 1,
+          "positive_rate": 0.0,
+          "labelled_airtime_sec": 27.579999999999927,
+          "target_counts": {
+            "REGULATOR": 1
+          },
+          "target_polarity": [
+            {
+              "target_type": "REGULATOR",
+              "polarity": "negative",
+              "n": 1
+            }
+          ]
+        }
+      ],
+      "n_utterances": 80,
+      "annotation_status_counts": {
+        "non_evaluative": 63,
+        "labelled": 17
+      }
+    }
+  ]
+}

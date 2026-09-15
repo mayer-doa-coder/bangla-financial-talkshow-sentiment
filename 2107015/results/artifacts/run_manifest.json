@@ -1,0 +1,235 @@
+{
+  "created_at": "2026-08-11T06:55:13.358892+00:00",
+  "config": {
+    "seed": 17,
+    "audio_source_dir": "/content/drive/MyDrive/ML-lab",
+    "import_audio": true,
+    "resume_completed_stages": true,
+    "force_rerun_stages": [],
+    "force_redownload_asr_model": false,
+    "download_final_bundle": true,
+    "include_trained_model_in_bundle": true,
+    "persist_final_bundle_to_drive": false,
+    "single_program_case_study": true,
+    "programme_name": "RTV Business Talk",
+    "channel_name": "RTV Business",
+    "self_attest_licenses": false,
+    "download_financial_corpus": false,
+    "run_diarization": true,
+    "run_asr": true,
+    "run_ger_ablation": false,
+    "run_weak_labelling": false,
+    "run_audio_weak_labelling": true,
+    "run_sentiment_training": false,
+    "allow_synthetic_smoke_test": false,
+    "diarization_model": "pyannote/speaker-diarization-community-1",
+    "diarization_revision": "3533c8cf8e369892e6b79ff1bf80f7b0286a54ee",
+    "asr_model": "bengaliAI/tugstugi_bengaliai-asr_whisper-medium",
+    "asr_revision": "da605cc1bd2f60a18d8e440e977ddfa921a88e63",
+    "sentiment_model": "csebuetnlp/banglabert",
+    "sentiment_revision": "9ce791f330578f50da6bc52b54205166fb5d1c8c",
+    "financial_dataset": "ashtrayAI/Bangla_Financial_news_articles_Dataset",
+    "financial_dataset_revision": "3e4d0c59dfc04f1951daf1d228f8a46879de474c",
+    "weak_label_model": "gemini-3.6-flash",
+    "max_chunk_sec": 28.0,
+    "beam_size": 5,
+    "repetition_penalty": 0.8,
+    "confidence_review_threshold": 0.85,
+    "multilabel_threshold": 0.5,
+    "der_collar_default": 0.25,
+    "min_segment_sec": 0.75,
+    "min_speaker_airtime_sec": 9.0,
+    "stitch_gap_sec": 2.0
+  },
+  "device": "cuda",
+  "files": {
+    "data/raw/episode_metadata.csv": {
+      "sha256": "49b0e6f6f7a8a5afb1a8ddf53d18562afb72f6483cf66c41850aa22bed48dcdf",
+      "bytes": 1286
+    },
+    "data/raw/financial_entities.csv": {
+      "sha256": "4ea195929aaaedd0ccd5d6d9b434d8e796af17d4560ced248e79a57fb671e1a4",
+      "bytes": 3433
+    },
+    "data/raw/registry.csv": {
+      "sha256": "147b8841021a82253c5189f7b9c505242eaf6da8c7f5120e294baafa58490484",
+      "bytes": 2336
+    },
+    "data/raw/target_annotation_policy.json": {
+      "sha256": "8f6c8441add96b87f5772383a0cfbdb310b2ea66d41c8adf9b99e58ccfc75f25",
+      "bytes": 1061
+    },
+    "data/processed/ep001.wav": {
+      "sha256": "8d81349ea4d20dfd6236a74427c6c11d708d7adeb9bfd38508e56487fafeec1f",
+      "bytes": 102342700
+    },
+    "data/processed/ep002.wav": {
+      "sha256": "e86ce3fe62f4d77db4e85043e820a858fc592df37810236b992b4684e770af6b",
+      "bytes": 65423404
+    },
+    "data/processed/ep003.wav": {
+      "sha256": "053462b2f7df00399b69a33a1e6b9d5cb40f24160e4fbebbc57581fe7f689242",
+      "bytes": 108924972
+    },
+    "data/processed/ep004.wav": {
+      "sha256": "1726a8e88dd8c73d79a6c9ac251e20eaa59f23967ef94353df553c002940deba",
+      "bytes": 76731096
+    },
+    "data/processed/ep005.wav": {
+      "sha256": "a10f8b1b9ce2afa5080d4d46256ccb75fd5ac3474fc847da0dd509a12d6bbb4a",
+      "bytes": 70355394
+    },
+    "data/processed/hygiene_report.json": {
+      "sha256": "fbe070af5d500ea47ccb14b356fbc5bef4eef8ac91a7b44311bcaefb44770f35",
+      "bytes": 3260
+    },
+    "data/diarization/ep001.json": {
+      "sha256": "6e6eefdc3d7a06690d07a87187bede61da10241fae120850f2e4e159a2c83b0e",
+      "bytes": 18438
+    },
+    "data/diarization/ep001.rttm": {
+      "sha256": "dee6d46f028a986e36a55a9cc86014f7c1c8f4967b5910d535ca07ccad0e78fb",
+      "bytes": 3295
+    },
+    "data/diarization/ep001_raw.rttm": {
+      "sha256": "98fe1fa18751f2f3a6c4cd9a44274e22e7735a42d0649eff3bb7e5f7352bff39",
+      "bytes": 33863
+    },
+    "data/diarization/ep002.json": {
+      "sha256": "5f4da7fd577e41f431ff1ae63984fc66f429f8a710fb2829aceed8f293efc044",
+      "bytes": 20678
+    },
+    "data/diarization/ep002.rttm": {
+      "sha256": "8bcfaffa34cc024cfcc68eaaf9ae8a3b5ed743eb20eb8ced99962e9c62bd974d",
+      "bytes": 3683
+    },
+    "data/diarization/ep002_raw.rttm": {
+      "sha256": "849632e4e7b8ef7459a6bcf8838b4ef66886a20b4a05abad1aa66f61b414f401",
+      "bytes": 12413
+    },
+    "data/diarization/ep003.json": {
+      "sha256": "18312fba0322c9b8148377375b7ff0dd5ff6492f98db47f19355959f1c3d1b18",
+      "bytes": 61812
+    },
+    "data/diarization/ep003.rttm": {
+      "sha256": "cf9543b807182af27495960f4c5c31297a187000f06fb259068547e0b757059c",
+      "bytes": 11047
+    },
+    "data/diarization/ep003_raw.rttm": {
+      "sha256": "beb5a758326b681a4fb1d2efef96573dd6b0cc6bfb33023448b6b187cf703b56",
+      "bytes": 52306
+    },
+    "data/diarization/ep004.json": {
+      "sha256": "31a18cb274ea10c923c563376104e770fc2faffce87ec3f28be12a6b47cda6aa",
+      "bytes": 11874
+    },
+    "data/diarization/ep004.rttm": {
+      "sha256": "110f874e0111d58d593f3fc91bc4fbdb87902f52d616953f144545b4c814afa0",
+      "bytes": 2114
+    },
+    "data/diarization/ep004_raw.rttm": {
+      "sha256": "3aff89b5f3d0ad64641dead7cdb2219088d71438efa0a4ebda422e2f87019334",
+      "bytes": 13676
+    },
+    "data/diarization/ep005.json": {
+      "sha256": "b6e0535e54acc4107f492f9a7e8034fdd426b117ce71f25498eb49823c279a36",
+      "bytes": 21824
+    },
+    "data/diarization/ep005.rttm": {
+      "sha256": "2902964fd8ddf9010b4daaa8f9f2a641842f708be1b4634592a30f8dd4d84514",
+      "bytes": 3882
+    },
+    "data/diarization/ep005_raw.rttm": {
+      "sha256": "860e39a0edc289acd6283305fed2de17ad018e2748662380c03dd9d1d53ba4d3",
+      "bytes": 11441
+    },
+    "data/asr/ep001.json": {
+      "sha256": "7cacb0933244d536174015ff4c09f76f9e88e81719fbf4a0de583b7e065cdad8",
+      "bytes": 1281315
+    },
+    "data/asr/ep002.json": {
+      "sha256": "c8070e56d247968eabaabf54f7a4d5dab32bc360635e1c654a5ab0c51cf1dc02",
+      "bytes": 782461
+    },
+    "data/asr/ep003.json": {
+      "sha256": "5e6627278e7bd5bbba763316638613e0486931c88d1559b01c9553a1f5ac0732",
+      "bytes": 1251682
+    },
+    "data/asr/ep004.json": {
+      "sha256": "ce978ffea5cbbfad53cf4ac0c12452a321e4fe1b33e0708d7456ac51bdee6c3a",
+      "bytes": 924869
+    },
+    "data/asr/ep005.json": {
+      "sha256": "94eda278e6aff89ba1620959413282f35ab9fa01c96ae10dbb8008353c9c5e77",
+      "bytes": 836960
+    },
+    "data/fused/ep001.json": {
+      "sha256": "69b11d3ae2304a03f3b2a83899a5a37a420d15f244ed309d3dcd418b5a495646",
+      "bytes": 3046463
+    },
+    "data/fused/ep002.json": {
+      "sha256": "96d94aa620024229f2dfaabcc8ccfc0657e7a3a34e4a563097b6c4cb8932ceb1",
+      "bytes": 1851214
+    },
+    "data/fused/ep003.json": {
+      "sha256": "e6c9953b357ebadad8e1d9f98b7810100f66550444e2d041624a4da0e0db6fbf",
+      "bytes": 2959455
+    },
+    "data/fused/ep004.json": {
+      "sha256": "306a2091bbb69b18a94984004b61c628bae5739b3b42ae9918e0ac6d1ce96727",
+      "bytes": 2175116
+    },
+    "data/fused/ep005.json": {
+      "sha256": "981c2bb7516a59f99811afe09d5f67c69bf0401bced96ce1f1d0ef9af7d32b84",
+      "bytes": 1988441
+    },
+    "data/aggregated/discourse_profiles_v2.json": {
+      "sha256": "c11b69e39f71d233facc1ec99b91cb7c6c1e54b726e439bfefe074c42d956f2a",
+      "bytes": 84
+    },
+    "data/aggregated/factorial_error_propagation.json": {
+      "sha256": "e00e5db6325b6fd73737d93693454e9bf15db08e1addb4929c2e99ee8ca54565",
+      "bytes": 20
+    },
+    "data/aggregated/stage_metrics.json": {
+      "sha256": "0cca797880fa1eb5aa8aff715e0f638dc687eb507a193b71240f53030de72178",
+      "bytes": 37
+    },
+    "data/aggregated/submission_gates.json": {
+      "sha256": "c5a5742d045da088c171a20e39864217ce27d3d35a1e7ff2c5a7a356c92f7d1f",
+      "bytes": 3471
+    },
+    "reports/diversity_audit.md": {
+      "sha256": "c46d5e47a1d6e317b5ed88fb508d01cdbde8a0fc2488a30ae68b8b7c077e1478",
+      "bytes": 823
+    },
+    "reports/figures/waveform_ep001.png": {
+      "sha256": "901eb24ff4264050b9e17b432a9041696dc3ad7ff609ec1c4faf8e2775ea9383",
+      "bytes": 38882
+    },
+    "reports/figures/waveform_ep002.png": {
+      "sha256": "f41dcc4452ae7b8f98da09c86e3fe383d950d5843ad393c3ee50dce6cde0a097",
+      "bytes": 41032
+    },
+    "reports/figures/waveform_ep003.png": {
+      "sha256": "5b8edf93b5ab4e2201324c6404dc241334758b65a5cafb8bd5ef2439d7e8eb45",
+      "bytes": 44832
+    },
+    "reports/figures/waveform_ep004.png": {
+      "sha256": "c3739e7bb9751072be2b5722e69fb5da67bf2727d1c81d6e6761de46147c05d9",
+      "bytes": 38732
+    },
+    "reports/figures/waveform_ep005.png": {
+      "sha256": "c6236c85d3f2a560e1e122445d89a67b2732449765a656e6bf44e53e4b39c112",
+      "bytes": 46199
+    },
+    "models/manifest.json": {
+      "sha256": "41b140dc7c0d2ece1c7a465844ebeeb4b9d350ccf5ddaa4cc9b2ccf078bd326d",
+      "bytes": 1126
+    }
+  },
+  "puku_audit": {
+    "status": "not present"
+  },
+  "submittable": false
+}

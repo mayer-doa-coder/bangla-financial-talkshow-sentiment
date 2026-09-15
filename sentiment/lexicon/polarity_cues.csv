@@ -1,0 +1,104 @@
+stem,kind,polarity,weight,negatable,exclude,gloss
+সংকট,evaluative,-1,1.0,0,,crisis
+ঘাটতি,evaluative,-1,1.0,0,,deficit
+পতন,evaluative,-1,1.0,0,,fall
+ধস,evaluative,-1,1.0,0,,collapse
+মন্দা,evaluative,-1,1.0,0,,recession
+দুর্বল,evaluative,-1,0.9,1,,weak
+ভঙ্গুর,evaluative,-1,1.0,1,,fragile
+নাজুক,evaluative,-1,1.0,1,,precarious
+ঝুঁকি,evaluative,-1,0.8,0,,risk
+শঙ্কা,evaluative,-1,0.8,0,,apprehension
+আশঙ্কা,evaluative,-1,0.9,0,,fear
+অনিশ্চ,evaluative,-1,0.9,0,,uncertainty
+অস্থির,evaluative,-1,0.9,0,,instability
+সমস্যা,evaluative,-1,0.8,0,,problem
+চাপ,evaluative,-1,0.7,0,চাপিয়ে,pressure
+ব্যর্থ,evaluative,-1,1.0,1,,failed
+নেতিবাচক,evaluative,-1,1.0,1,,negative
+লোকসান,evaluative,-1,1.0,0,,loss
+ক্ষতি,evaluative,-1,0.9,0,,damage
+দুর্নীতি,evaluative,-1,1.0,0,,corruption
+অনিয়ম,evaluative,-1,0.9,0,,irregularity
+জালিয়াতি,evaluative,-1,1.0,0,,fraud
+বিপর্যয়,evaluative,-1,1.0,0,,disaster
+স্থবির,evaluative,-1,0.9,1,,stagnant
+অবনতি,evaluative,-1,1.0,0,,deterioration
+অভাব,evaluative,-1,0.8,0,,shortage
+সংকুচিত,evaluative,-1,0.9,1,,contracted
+তলানি,evaluative,-1,0.9,0,,bottomed out
+দুর্ভোগ,evaluative,-1,0.9,0,,suffering
+বৈষম্য,evaluative,-1,0.8,0,বৈষম্যহীন,inequality
+ভোগান্তি,evaluative,-1,0.9,0,,harassment
+বিপদ,evaluative,-1,0.9,0,,danger
+খারাপ,evaluative,-1,0.9,1,,bad
+নিম্নমুখী,evaluative,-1,0.9,1,,downward
+অচল,evaluative,-1,0.9,1,,non functional
+জটিল,evaluative,-1,0.6,1,,complicated
+চ্যালেঞ্জ,evaluative,-1,0.6,0,,challenge
+বাধা,evaluative,-1,0.8,0,,obstacle
+কঠিন,evaluative,-1,0.7,1,,difficult
+দারিদ্র,evaluative,-1,0.9,0,,poverty
+বেকার,evaluative,-1,0.9,0,,unemployed
+অনাস্থা,evaluative,-1,1.0,0,,distrust
+আস্থাহীন,evaluative,-1,1.0,0,,lacking confidence
+স্থগিত,evaluative,-1,0.7,0,,suspended
+উন্নতি,evaluative,1,1.0,0,,improvement
+উন্নয়ন,evaluative,1,0.7,0,,development
+অগ্রগতি,evaluative,1,1.0,0,,progress
+সফল,evaluative,1,1.0,1,,successful
+শক্তিশালী,evaluative,1,1.0,1,,strong
+মজবুত,evaluative,1,1.0,1,,solid
+স্থিতিশীল,evaluative,1,1.0,1,,stable
+ইতিবাচক,evaluative,1,1.0,1,,positive
+সম্ভাবনা,evaluative,1,0.8,0,,potential
+সুযোগ,evaluative,1,0.7,0,,opportunity
+সুবিধা,evaluative,1,0.7,0,অসুবিধা,benefit
+লাভ,evaluative,1,0.9,0,,profit
+মুনাফা,evaluative,1,0.9,0,,profit
+স্বস্তি,evaluative,1,1.0,0,,relief
+পুনরুদ্ধার,evaluative,1,1.0,0,,recovery
+সমৃদ্ধ,evaluative,1,1.0,1,,prosperous
+উৎসাহ,evaluative,1,0.8,0,,encouragement
+সহায়তা,evaluative,1,0.6,0,,support
+রেকর্ড,evaluative,1,0.7,0,,record
+সচল,evaluative,1,0.8,1,,operational
+গতিশীল,evaluative,1,0.9,1,,dynamic
+ভালো,evaluative,1,0.8,1,ভালোবাস,good
+উর্ধ্বমুখী,evaluative,1,0.9,1,,upward
+ঊর্ধ্বমুখী,evaluative,1,0.9,1,,upward
+আশাবাদী,evaluative,1,0.9,1,,optimistic
+আশান্বিত,evaluative,1,0.9,1,,hopeful
+সুরক্ষা,evaluative,1,0.7,0,,protection
+স্বচ্ছতা,evaluative,1,0.9,0,,transparency
+জবাবদিহি,evaluative,1,0.8,0,,accountability
+জোরদার,evaluative,1,0.9,0,,strengthened
+পুনর্গঠন,evaluative,1,0.6,0,,restructuring
+সংস্কার,evaluative,1,0.6,0,,reform
+প্রণোদনা,evaluative,1,0.7,0,,incentive
+আস্থা,evaluative,1,0.8,0,আস্থাহীন,confidence
+সহজ,evaluative,1,0.7,1,,easy
+বেড়েছে,direction,1,1.0,1,,has increased
+বেড়ে,direction,1,0.9,1,,increasing
+বাড়ছে,direction,1,1.0,1,,is increasing
+বাড়বে,direction,1,0.9,1,,will increase
+বাড়াতে,direction,1,0.8,1,,to increase
+বাড়ানো,direction,1,0.8,1,,raising
+বাড়িয়ে,direction,1,0.8,1,,having raised
+বৃদ্ধি,direction,1,1.0,0,,increase
+ঊর্ধ্বগতি,direction,1,0.9,0,,upward movement
+উত্থান,direction,1,0.9,0,,rise
+কমেছে,direction,-1,1.0,1,,has decreased
+কমছে,direction,-1,1.0,1,,is decreasing
+কমবে,direction,-1,0.9,1,,will decrease
+কমে,direction,-1,0.9,1,,decreasing
+কমিয়ে,direction,-1,0.8,1,,having reduced
+কমানো,direction,-1,0.8,1,,reducing
+হ্রাস,direction,-1,1.0,0,,reduction
+নিম্নগামী,direction,-1,0.9,1,,declining
+অস্থিতিশীল,evaluative,-1,1.0,0,,unstable
+অস্বচ্ছ,evaluative,-1,0.9,0,,opaque
+অসুবিধা,evaluative,-1,0.8,0,,disadvantage
+অপ্রতুল,evaluative,-1,0.9,0,,inadequate
+অক্ষম,evaluative,-1,0.9,0,,incapable
+অনুন্নত,evaluative,-1,0.9,0,,underdeveloped

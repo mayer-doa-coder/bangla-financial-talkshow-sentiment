@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-08-11T07:25:30Z",
+  "schema_version": 1,
+  "license_stub": "self-attested-CC-BY-4.0 (research-replay; verify before publication)",
+  "episodes": [
+    {
+      "episode_id": "ep001",
+      "local_path": "datasets/অর্থনৈতিক সংকট কাটছে না কেন ？  ｜ বিজনেস টক ｜ পর্ব- ১৩৫ ｜ Business Talk ｜ Live Talk show ｜ Live.mp3",
+      "sha256": "ea73b9db86bbee93fd426a5ecf4b9015ada0962aa6da69a9d200ee56ce57a90f",
+      "duration_sec": 3334.13,
+      "license_attestation": "self-attested-CC-BY-4.0 (research-replay; verify before publication)"
+    },
+    {
+      "episode_id": "ep002",
+      "local_path": "datasets/জাতীয় বাজেটে ব্যাংকিং খাতের চ্যালেঞ্জ ｜ ATN Business & Finance ｜ ATN Bangla Talk Show.mp3",
+      "sha256": "ca0d89841aba2d9fc7c3b18603488d196d35a4a9c16eb1bad388ac2d896fa8f1",
+      "duration_sec": 1814.4,
+      "license_attestation": "self-attested-CC-BY-4.0 (research-replay; verify before publication)"
+    },
+    {
+      "episode_id": "ep003",
+      "local_path": "datasets/বাজেট নিয়ে ব্যবসায়ীদের ভাবনা ｜ ATN Business & Finance ｜ ATN Bangla Talkshow.mp3",
+      "sha256": "790fe0442ce0f426a757b0e8dcddd160f1c4b295d5b29366227dbfd6e5e74a78",
+      "duration_sec": 1741.68,
+      "license_attestation": "self-attested-CC-BY-4.0 (research-replay; verify before publication)"
+    },
+    {
+      "episode_id": "ep004",
+      "local_path": "datasets/মুদ্রানীতি ও নতুন অর্থবছরের চ্যালেঞ্জ ｜ বিজনেস টক ｜ পর্ব- ১১৭ ｜ Business Talk ｜ Live Talk show.mp3",
+      "sha256": "0ecced95f612c49de6b03cdd32f3fdac08d55946e6ead62f8beaee257f33f38d",
+      "duration_sec": 3075.65,
+      "license_attestation": "self-attested-CC-BY-4.0 (research-replay; verify before publication)"
+    },
+    {
+      "episode_id": "ep005",
+      "local_path": "datasets/শেয়ারবাজারে এখন কি বিনিয়োগের সময়？ ｜ বিজনেস টক ｜ পর্ব- ১৪২ ｜ Business Talk ｜ Live Talk show.mp3",
+      "sha256": "84e01c4ea9236ed3fc443862c86b8c58eb0335bb4470ad9a3730dfdbd9e775ec",
+      "duration_sec": 3613.73,
+      "license_attestation": "self-attested-CC-BY-4.0 (research-replay; verify before publication)"
+    }
+  ]
+}
