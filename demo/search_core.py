@@ -56,6 +56,22 @@ LOW_ASSIGNMENT_WARNING = 0.75
 
 ROLL_PATTERN = re.compile(r"\d{6,}")
 
+# Superseded pipeline runs are archived next to the live bundle (the roll folders
+# keep them under _source_runs/). They contain a complete fused/ stage, so
+# indexing them registers a second bundle for the same roll and double-counts
+# every episode. Skip archives and tooling directories when discovering bundles.
+ARCHIVED_DIR_NAMES = frozenset({
+    "_source_runs",
+    "__pycache__",
+    ".git",
+    ".ipynb_checkpoints",
+})
+
+
+def _is_archived(path: Path) -> bool:
+    return any(part in ARCHIVED_DIR_NAMES for part in path.parts)
+
+
 # Exported bundles differ between members: some keep the canonical
 # ``<bundle>/data/<stage>`` tree, others exported the stage folders directly
 # under ``<bundle>/``. A few stage folders were also renamed on export.
@@ -417,6 +433,8 @@ def _discover_bundle_roots(data_root: Path) -> list[Path]:
     candidates = [data_root / "data" / "fused", data_root / "fused"]
     candidates.extend(data_root.rglob("fused"))
     for fused_dir in candidates:
+        if _is_archived(fused_dir):
+            continue
         if fused_dir.is_dir() and any(fused_dir.glob("*.json")):
             roots.add(_bundle_root_for_stage_dir(fused_dir).resolve())
     return sorted(roots)
