@@ -1,0 +1,4 @@
+turn_bucket,units,accuracy,macro_f1
+1-4 turns,28,0.6429,0.5307
+13+ turns,45,0.6444,0.3243
+5-12 turns,74,0.6622,0.6069

@@ -1,0 +1,59 @@
+{
+  "task": "Task B: one verdict per speaker per whole episode",
+  "protocol": "5-fold episode-disjoint cross-validation over all 147 speaker units; no episode appears in both sides of a fold",
+  "classes": [
+    "negative",
+    "mixed",
+    "neutral",
+    "positive"
+  ],
+  "class_counts": {
+    "negative": 110,
+    "mixed": 8,
+    "neutral": 18,
+    "positive": 11
+  },
+  "n_units": 147,
+  "n_episodes": 45,
+  "accuracy": 0.6531,
+  "macro_f1": 0.5304,
+  "direction_accuracy": 0.6531,
+  "systems": [
+    {
+      "system": "majority_class",
+      "units": 147,
+      "accuracy": 0.7483,
+      "macro_f1": 0.214,
+      "direction_accuracy": 0.7483
+    },
+    {
+      "system": "tfidf_speaker_script",
+      "units": 147,
+      "accuracy": 0.7755,
+      "macro_f1": 0.3416,
+      "direction_accuracy": 0.7755
+    },
+    {
+      "system": "hierarchical_banglabert",
+      "units": 147,
+      "accuracy": 0.6531,
+      "macro_f1": 0.5304,
+      "direction_accuracy": 0.6531
+    },
+    {
+      "system": "oracle_aggregated_gold_turns",
+      "units": 147,
+      "accuracy": 0.8503,
+      "macro_f1": 0.6642,
+      "direction_accuracy": 0.8503
+    }
+  ],
+  "system_notes": {
+    "majority_class": "floor: always predict the training fold's most common verdict",
+    "tfidf_speaker_script": "control: TF-IDF over the speaker's concatenated script",
+    "hierarchical_banglabert": "the Task B model: attention pooling over turn embeddings",
+    "oracle_aggregated_gold_turns": "not a model; the judge's own gold turn labels aggregated word-weighted, so it bounds any turn-aggregation route"
+  },
+  "label_source": "LLM-as-judge (claude-opus-5), no human labels",
+  "caveat": "scores measure agreement with the LLM judge's holistic verdict, not with human ground truth"
+}

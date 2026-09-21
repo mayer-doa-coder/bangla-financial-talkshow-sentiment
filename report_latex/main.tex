@@ -143,81 +143,91 @@
 \end{center}
 
 \vspace{4pt}
-{\sffamily\bfseries (a) Framework illustrating the practical application of the data}
+{\sffamily\bfseries What the dataset makes possible}
 \vspace{1pt}
 
 \begin{center}
 \begin{tikzpicture}[node distance=0mm]
-\def\bw{26.5mm}
-\node[fbox=\bw, fill=cAsk, draw=cAskB, minimum height=17mm] (a1)
-  {\fhd{Analyst question} Who \emph{in the panel} is negative on the economy?};
-\node[fbox=\bw, fill=cSig, draw=cSigB, minimum height=17mm, right=7mm of a1] (a2)
-  {\fhd{Broadcast input} 45 talk-show episodes, 28.6\,h, 3 channels};
-\node[fbox=\bw, fill=cDat, draw=cDatB, minimum height=17mm, right=7mm of a2] (a3)
-  {\fhd{This dataset} 2{,}414 speaker turns; 1{,}630 supervised labels};
-\node[fbox=\bw, fill=cMod, draw=cModB, minimum height=17mm, right=7mm of a3] (a4)
-  {\fhd{Stance model} BanglaBERT turn classifier $+$ speaker aggregation};
-\node[fbox=\bw, fill=cOut, draw=cOutB, minimum height=17mm, right=7mm of a4] (a5)
-  {\fhd{Deployed signal} Speaker-resolved sentiment index over air-time};
-\foreach \i/\j in {a1/a2, a2/a3, a3/a4, a4/a5} \draw[farr] (\i) -- (\j);
-\foreach \n/\k in {a1/1, a2/2, a3/3, a4/4, a5/5}
+% ---------------------------------------------------------------- input
+\node[fbox=32mm, fill=cSig, draw=cSigB, minimum height=30mm] (g1)
+  {\fhd{One talk show}
+   A host and three guests argue about the economy for forty minutes.
+   \\[2pt]
+   {\footnotesize They disagree with each other.}};
+
+% ------------------------------------------------- the usual answer (top)
+\node[fbox=54mm, fill=cAsk, draw=cAskB, minimum height=13mm,
+      right=9mm of g1, yshift=9.5mm] (g2)
+  {\fhd{What ordinary sentiment tools report}
+   One label for the whole programme: \textbf{negative}.
+   Nobody can tell \emph{who} was negative.};
+
+% ------------------------------------------------ what this dataset adds
+\node[fbox=54mm, fill=cDat, draw=cDatB, minimum height=22mm,
+      right=9mm of g1, yshift=-13mm] (g3)
+  {\fhd{What this dataset reports}
+   A separate verdict for each person:
+   \\[2.5pt]
+   {\footnotesize\setstretch{1.15}
+   Host \,\textbullet\, \textbf{neutral} \\
+   Economist \,\textbullet\, \textbf{negative} \\
+   Banker \,\textbullet\, \textbf{positive} \\
+   Member of parliament \,\textbullet\, \textbf{mixed}}};
+
+% ---------------------------------------------------------------- output
+\node[fbox=36mm, fill=cOut, draw=cOutB, minimum height=30mm,
+      right=9mm of g3.east, anchor=west, yshift=13mm] (g4)
+  {\fhd{Questions you can now answer}
+   {\footnotesize\setstretch{1.15}
+   Which experts are worried? \\[2pt]
+   Is the banking sector more
+   optimistic than economists? \\[2pt]
+   Is that changing month by month?}};
+
+\draw[farr] (g1.east) -- ++(4.5mm,0) |- (g2.west);
+\draw[farr] (g1.east) -- ++(4.5mm,0) |- (g3.west);
+\draw[farr] (g3.east) -- (g4.west);
+
+\foreach \n/\k in {g1/1, g2/2, g3/3, g4/4}
   \node[fnum] at ($(\n.north west)+(1.6mm,-1.6mm)$) {\k};
-\node[bandlbl, below=1.2mm of a1] {NEED};
-\node[bandlbl, below=1.2mm of a3] {ARTEFACT};
-\node[bandlbl, below=1.2mm of a5] {USE};
+\node[bandlbl, below=1.2mm of g1] {WHAT GOES IN};
+\node[bandlbl, below=1.2mm of g3] {WHAT COMES OUT};
 \end{tikzpicture}
 \end{center}
 
-{\sffamily\small\setstretch{1.0}\textbf{Figure 1(a).} Practical application framework. Intended
-users are financial-media analysts, macroeconomic policy monitors and Bangla NLP researchers; the
-practical outcome is a speaker-resolved stance signal over broadcast financial discourse that
-document-level sentiment cannot produce.\par}
-\vspace{6pt}
+{\sffamily\small\setstretch{1.0}\textbf{Figure 1.} The idea in one picture. Existing Bangla
+sentiment resources label a document or a sentence, so a programme in which four people disagree
+collapses into a single score. This dataset keeps the speakers apart and gives each one a verdict
+for the episode, which is what makes it possible to ask who holds which position rather than only
+how the programme sounded overall.\par}
 
-{\sffamily\bfseries (b) Technical pipeline of the ML method using the dataset}
-\vspace{1pt}
+\vspace{10pt}
+{\sffamily\bfseries The dataset at a glance}
+\vspace{3pt}
 
 \begin{center}
 \begin{tikzpicture}[node distance=0mm]
-\def\pw{31mm}
-% ---- row 1: signal
-\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=15mm] (b1)
-  {\fhd{Acquire} Raw MP3/MPEG broadcast audio, 28.6\,h, 45 episodes};
-\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=15mm, right=8mm of b1] (b2)
-  {\fhd{Condition} 16\,kHz mono; VAD, duplicate and ASR loop detection};
-\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=15mm, right=8mm of b2] (b3)
-  {\fhd{Diarize \& ASR} \texttt{pyannote} $+$ Whisper-medium Bangla ASR};
-\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=15mm, right=8mm of b3] (b4)
-  {\fhd{Fuse} Word--speaker alignment $\rightarrow$ \textbf{2{,}414 speaker turns}};
-% ---- row 2: supervision and modelling
-\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=15mm, below=17mm of b1] (b5)
-  {\fhd{Label} LLM-as-judge, human-authored rubric; turn $+$ speaker verdict};
-\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=15mm, right=8mm of b5] (b6)
-  {\fhd{Partition} \textbf{Episode-disjoint} split $1{,}009 / 297 / 324$};
-\node[fbox=\pw, fill=cMod, draw=cModB, minimum height=15mm, right=8mm of b6] (b7)
-  {\fhd{Model} BanglaBERT turn classifier $\rightarrow$ speaker aggregation};
-\node[fbox=\pw, fill=cOut, draw=cOutB, minimum height=15mm, right=8mm of b7] (b8)
-  {\fhd{Evaluate} Turn macro-F1 $0.670$; speaker verdict $0.653$ out-of-fold};
-\foreach \i/\j in {b1/b2, b2/b3, b3/b4, b5/b6, b6/b7, b7/b8} \draw[farr] (\i) -- (\j);
-% wrap from the end of row 1 to the start of row 2
-\draw[farr] (b4.south) -- ++(0,-8.5mm) -| (b5.north);
-\foreach \n/\k in {b1/1, b2/2, b3/3, b4/4, b5/5, b6/6, b7/7, b8/8}
-  \node[fnum] at ($(\n.north west)+(1.6mm,-1.6mm)$) {\k};
-\begin{scope}[on background layer]
-  \node[band, fit=(b1)(b4), inner sep=2.6mm] (grow1) {};
-  \node[band, fit=(b5)(b8), inner sep=2.6mm] (grow2) {};
-\end{scope}
-\node[bandlbl, anchor=north west] at ($(grow1.north west)+(1mm,3.4mm)$)
-  {STAGE I --- SIGNAL TO CORPUS};
-\node[bandlbl, anchor=south west] at ($(grow2.south west)+(1mm,-3.4mm)$)
-  {STAGE II --- SUPERVISION TO EVALUATION};
+\def\gw{22.5mm}
+\node[fbox=\gw, fill=cSig, draw=cSigB, minimum height=16mm] (n1)
+  {\fhd{45 episodes} 28.6 hours of broadcast audio from 3 channels};
+\node[fbox=\gw, fill=cSig, draw=cSigB, minimum height=16mm, right=4mm of n1] (n2)
+  {\fhd{2{,}414 turns} 219{,}000 words, each tied to one speaker};
+\node[fbox=\gw, fill=cDat, draw=cDatB, minimum height=16mm, right=4mm of n2] (n3)
+  {\fhd{1{,}630 labels} turn sentiment, the first task};
+\node[fbox=\gw, fill=cDat, draw=cDatB, minimum height=16mm, right=4mm of n3] (n4)
+  {\fhd{147 verdicts} one per speaker per episode, the second task};
+\node[fbox=\gw, fill=cMod, draw=cModB, minimum height=16mm, right=4mm of n4] (n5)
+  {\fhd{Two baselines} macro-F1 $0.670$ on turns, $0.530$ on speakers};
+\node[fbox=\gw, fill=cOut, draw=cOutB, minimum height=16mm, right=4mm of n5] (n6)
+  {\fhd{Open} CC BY 4.0 annotations; code and splits released};
 \end{tikzpicture}
 \end{center}
 
-{\sffamily\small\setstretch{1.0}\textbf{Figure 1(b).} Technical pipeline followed in the course
-project. Splitting is grouped by episode, never by row, so that turns from one panel cannot
-appear on both sides of the split; the deduplicated episode is removed before partitioning. All
-45 episodes carry trusted \texttt{pyannote} diarization in this build.\par}
+{\sffamily\small\setstretch{1.0}Every label in this release was written by a language model
+following a rubric the team wrote, and then checked for internal consistency; no human annotator
+re-labelled individual turns. Scores therefore measure agreement with that judge rather than with
+human ground truth, and the report says so wherever a number appears.\par}
+
 
 
 \clearpage
@@ -253,7 +263,7 @@ This is a course-specific dataset report template. It combines the reporting log
 \thd{Corresponding student} & Tawhidul Hasan (2107004), hasan2107004@stud.kuet.ac.bd \\ \hline
 \thd{Keywords}              & Bangla NLP; speaker-level sentiment; financial talk shows; speaker diarization; automatic speech recognition; LLM-as-judge; BanglaBERT; low-resource corpus \\ \hline
 \thd{Dataset version}       & v1.0; released 15 September 2026 \\ \hline
-\thd{Repository / persistent ID} & Git repository: {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}}. Access is currently restricted to the course instructor and the authors; no DOI is minted yet. Source broadcast audio and the fine-tuned checkpoint are excluded --- see Section 13 and the repository \texttt{.gitignore}. \\ \hline
+\thd{Repository / persistent ID} & Git repository: {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}}. Access is currently restricted to the course instructor and the authors; no DOI is minted yet. Source broadcast audio and the fine-tuned checkpoint are excluded; see Section 13 and the repository \texttt{.gitignore}. \\ \hline
 \thd{License}               & CC BY 4.0 for the derived annotations, transcripts and timings \emph{only}. Source broadcast audio is third-party copyrighted and is not covered by this licence and not redistributed (Section 13). \\ \hline
 \thd{Related article / source} & None \\ \hline
 \end{tabularx}
@@ -296,7 +306,7 @@ and annotator agreement remain unmeasured and are documented as such.
 \thd{Item} & \thd{Required information} \\ \hline
 \endfirsthead
 \hline \thd{Item} & \thd{Required information} \\ \hline \endhead
-\thd{Subject / domain}          & Computer science --- natural language processing; applied economics / financial media analysis \\ \hline
+\thd{Subject / domain}          & Computer science and natural language processing; applied economics / financial media analysis \\ \hline
 \thd{Specific subject area}     & Speaker-attributed sentiment and stance analysis of Bangla-language broadcast financial discourse \\ \hline
 \thd{Type of data}              & Multimodal: raw broadcast audio (not redistributed), processed WAV, ASR transcripts, diarization segments, fused word--speaker alignments, speaker turns, and sentiment labels. Both raw and processed components are released. \\ \hline
 \thd{File formats}              & MP3/MPEG (source), WAV 16 kHz mono (processed), JSON (ASR, diarization, fusion), RTTM (diarization, standard), JSONL (turns, speakers, labels, splits), CSV (registry, lexicons), Jupyter \texttt{.ipynb} \\ \hline
@@ -308,8 +318,10 @@ and annotator agreement remain unmeasured and are documented as such.
 \thd{Dataset size}              & 45 unique episodes ($\approx$28.6 h audio); 5{,}327 ASR decode windows; \textbf{2{,}414 speaker turns} ($\approx$219{,}000 words); 212 speaker--episode units; 150 judged units; 1{,}811 turn labels; 1{,}630 supervised turns \\ \hline
 \thd{Target / labels}           & Turn level: \{\texttt{negative}, \texttt{neutral}, \texttt{positive}\} (plus \texttt{illegible}, excluded from supervision). Speaker level: \{\texttt{negative}, \texttt{mixed}, \texttt{neutral}, \texttt{positive}\} plus a continuous \texttt{stance\_score} $\in[-1,1]$. \\ \hline
 \thd{Accessibility}             & Git repository (restricted at submission): {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}}. It carries the derived annotations, transcripts, timings, diarization output, the build and baseline code and this report; the source broadcast audio is not redistributed. \\ \hline
-\thd{License / reuse terms}     & CC BY 4.0 for the derived annotations; source broadcast audio is third-party copyrighted and is \textbf{not} redistributed --- see Section 13. \\ \hline
+\thd{License / reuse terms}     & CC BY 4.0 for the derived annotations; source broadcast audio is third-party copyrighted and is \textbf{not} redistributed; see Section 13. \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 
 %=======================================================================
 \section{Value of the Data}
@@ -330,8 +342,8 @@ practically relevant. Avoid unsupported claims of novelty or superiority.}
   \item It supports several ML tasks directly: turn-level sentiment classification, speaker-level
         stance aggregation, role classification (host vs.\ guest), hierarchical document modelling
         over speaker scripts, and robustness studies on noisy ASR output.
-  \item Every intermediate artefact is preserved --- diarization RTTM, per-word ASR probabilities,
-        fusion alignments and judge rationales with verbatim evidence quotes --- so the corpus can
+  \item Every intermediate artefact is preserved: diarization RTTM, per-word ASR probabilities,
+        fusion alignments, and judge rationales with evidence quotes. The corpus can therefore
         be re-derived under a different diarizer, a different ASR model or a different labelling
         rule without re-collecting audio.
   \item The dataset is extensible along two documented axes: the audio is retained, so acoustic
@@ -349,8 +361,8 @@ practically relevant. Avoid unsupported claims of novelty or superiority.}
 position it relative to existing datasets or data-collection practices. Refer back to the
 practical-application framework on Page 1. Recommended: 200--400 words.}
 
-Bangladesh's recent macroeconomic period --- banking-sector stress, foreign-reserve pressure and
-sustained inflation --- was debated nightly on television business programmes. These broadcasts
+Bangladesh's recent macroeconomic period, marked by banking-sector stress, foreign-reserve
+pressure and sustained inflation, was debated nightly on television business programmes. These broadcasts
 are the most concentrated public record of expert opinion on the economy, yet they are audio, in
 Bangla, and unindexed. Analysts who want to know whether professional sentiment is turning must
 watch them.
@@ -358,15 +370,15 @@ watch them.
 The gap is twofold. First, Bangla sentiment resources (BLP shared tasks, BanglaBERT's BLUB
 benchmark, BAN-ABSA and BABSA) are built from written social-media or review text; none covers
 broadcast financial speech. Second, and more fundamentally, almost all conversational sentiment
-resources label \emph{utterances} or \emph{documents}, not \emph{speakers}. As Figure 1(a) shows,
-the practical output required by the stakeholders --- media monitors, policy analysts and
-researchers --- is a statement of the form ``this economist is negative on the banking sector,''
+resources label \emph{utterances} or \emph{documents}, not \emph{speakers}. As Figure~1 shows,
+the practical output required by the stakeholders (media monitors, policy analysts and
+researchers) is a statement of the form ``this economist is negative on the banking sector,''
 which a document-level label cannot express.
 
 This motivated a dataset whose unit of analysis is the speaker turn and whose secondary unit is
 the speaker--episode. Producing it required solving an attribution problem before any sentiment
 problem: television panels overlap, interrupt and hand over rapidly, so speaker identity must be
-recovered from the audio and then aligned to ASR words. The pipeline in Figure 1(b) is the
+recovered from the audio and then aligned to ASR words. The pipeline in Figure~2 is the
 result. A final constraint shaped the labelling strategy: the collected material carried
 \textbf{zero human sentiment labels}, and the only pre-existing annotations in the project (180
 target-level pairs) were single-annotator and self-declared as provisional. LLM-as-judge
@@ -379,6 +391,57 @@ reported explicitly rather than absorbed silently.
 
 \emph{\small Describe data generation/collection in enough detail that another group could
 reproduce the process. Distinguish primary data from externally sourced/secondary data.}
+
+Figure~2 sets out the processing chain as it was actually run. Every stage writes a
+durable artefact to disk, so any step can be inspected or repeated without re-running the ones
+before it.
+
+\vspace{2pt}
+\vspace{1pt}
+
+\begin{center}
+\begin{tikzpicture}[node distance=0mm]
+\def\pw{31mm}
+% ---- row 1: signal
+\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=15mm] (b1)
+  {\fhd{Acquire} Raw MP3/MPEG broadcast audio, 28.6\,h, 45 episodes};
+\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=15mm, right=8mm of b1] (b2)
+  {\fhd{Condition} 16\,kHz mono; VAD, duplicate and ASR loop detection};
+\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=15mm, right=8mm of b2] (b3)
+  {\fhd{Diarize \& ASR} \texttt{pyannote} $+$ Whisper-medium Bangla ASR};
+\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=15mm, right=8mm of b3] (b4)
+  {\fhd{Fuse} Word--speaker alignment $\rightarrow$ \textbf{2{,}414 speaker turns}};
+% ---- row 2: supervision and modelling
+\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=15mm, below=17mm of b1] (b5)
+  {\fhd{Label} LLM-as-judge, human-authored rubric; turn $+$ speaker verdict};
+\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=15mm, right=8mm of b5] (b6)
+  {\fhd{Partition} \textbf{Episode-disjoint} split $1{,}009 / 297 / 324$};
+\node[fbox=\pw, fill=cMod, draw=cModB, minimum height=15mm, right=8mm of b6] (b7)
+  {\fhd{Model} BanglaBERT turn classifier $\rightarrow$ speaker aggregation};
+\node[fbox=\pw, fill=cOut, draw=cOutB, minimum height=15mm, right=8mm of b7] (b8)
+  {\fhd{Evaluate} Turn macro-F1 $0.670$; speaker verdict $0.653$ out-of-fold};
+\foreach \i/\j in {b1/b2, b2/b3, b3/b4, b5/b6, b6/b7, b7/b8} \draw[farr] (\i) -- (\j);
+% wrap from the end of row 1 to the start of row 2
+\draw[farr] (b4.south) -- ++(0,-8.5mm) -| (b5.north);
+\foreach \n/\k in {b1/1, b2/2, b3/3, b4/4, b5/5, b6/6, b7/7, b8/8}
+  \node[fnum] at ($(\n.north west)+(1.6mm,-1.6mm)$) {\k};
+\begin{scope}[on background layer]
+  \node[band, fit=(b1)(b4), inner sep=2.6mm] (grow1) {};
+  \node[band, fit=(b5)(b8), inner sep=2.6mm] (grow2) {};
+\end{scope}
+\node[bandlbl, anchor=north west] at ($(grow1.north west)+(1mm,3.4mm)$)
+  {STAGE I: SIGNAL TO CORPUS};
+\node[bandlbl, anchor=south west] at ($(grow2.south west)+(1mm,-3.4mm)$)
+  {STAGE II: SUPERVISION TO EVALUATION};
+\end{tikzpicture}
+\end{center}
+
+{\sffamily\small\setstretch{1.0}\textbf{Figure 2.} Technical pipeline followed in the course
+project. Splitting is grouped by episode, never by row, so that turns from one panel cannot
+appear on both sides of the split; the deduplicated episode is removed before partitioning. All
+45 episodes carry trusted \texttt{pyannote} diarization in this build.\par}
+
+\vspace{4pt}
 
 \subsection{Data source and sampling strategy}
 
@@ -440,9 +503,9 @@ speaker verdict \emph{and} every turn label in the same call so that turn labels
 with the holistic verdict. All 150 eligible units were judged. The rubric encodes the failure modes of this genre:
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=2pt]
-  \item \textbf{Evaluative stance, not emotion} --- a calm description of a banking collapse is negative.
-  \item \textbf{Direction words are not polar} --- ``increased'' is positive for reserves and negative for inflation; polarity follows the orientation of the target.
-  \item \textbf{A pointed question is neutral} --- hosts elicit, they do not assert.
+  \item \textbf{Evaluative stance, not emotion.} A calm description of a banking collapse is negative.
+  \item \textbf{Direction words are not polar.} ``Increased'' is positive for reserves and negative for inflation; polarity follows the orientation of the target.
+  \item \textbf{A pointed question is neutral.} Hosts elicit, they do not assert.
   \item \textbf{A recommendation is neutral; a complaint is negative.}
   \item \textbf{Reported speech is not the speaker's own stance.}
   \item \texttt{illegible} is a first-class label for ASR-destroyed turns, which are then dropped from supervision rather than guessed.
@@ -451,16 +514,16 @@ with the holistic verdict. All 150 eligible units were judged. The rubric encode
 Each turn label carries a confidence and an \textbf{evidence quote}. We measured how literal these
 quotes are: \textbf{58\% occur verbatim in the turn they cite and 42\% are close paraphrases of it}
 (59.4\% in the first judging round, 56.9\% in the second, so this is a stable property of the judge
-rather than a regression). The quotes therefore localise a label to a specific turn and claim ---
-which is what makes manual spot-checking fast --- but they are \emph{not} exact-match provenance
+rather than a regression). The quotes therefore localise a label to a specific turn and claim,
+which is what makes manual spot-checking fast, but they are \emph{not} exact-match provenance
 and must not be used as string keys. The measurement script is released with the corpus. \textbf{The shipped labels are a single judging pass}, produced in an
 interactive session rather than through the batch API, so \texttt{pass\_agreement} equals 1.0 by
 construction and no self-consistency figure exists yet. Multi-pass judging
 (\texttt{--passes 3}) and the 180-turn human verification sample are specified in the repository
 and are the designated next step (Sections 9 and 12).
 
-\textbf{Re-judging after the second pipeline run.} When the bundles were re-processed --- twenty
-additional episodes, and \texttt{pyannote} re-run over roll \texttt{2107009} --- the turn
+\textbf{Re-judging after the second pipeline run.} When the bundles were re-processed, adding
+twenty episodes and re-running \texttt{pyannote} over roll \texttt{2107009}, the turn
 segmentation changed underneath most of the existing labels. A judgement was carried forward
 \emph{only} if its speaker key still existed \emph{and} its ordered list of \texttt{turn\_id}s was
 byte-identical to the rebuilt corpus. Fifty-three of the original judgements passed that test;
@@ -480,13 +543,13 @@ decisions left an artefact in the archive that a reader can check:
   the team after reading transcripts, not derived by the model. The judge's decisions are
   therefore constrained by human criteria that are published in full.
   \item \textbf{Diarization was audited and re-run.} Inspection of build~1 showed that roll
-  \texttt{2107009} had been segmented by the fallback provider into unusable fragments ---
+  \texttt{2107009} had been segmented by the fallback provider into unusable fragments;
   \texttt{ep001} alone produced 263 of them. The episode set for that roll was re-diarized with
   \texttt{pyannote} and \texttt{ep001} resolved to 47 real speaker turns. All 45 episodes in the
   released build carry \texttt{diarization\_trusted = true}; none did in build~1.
   \item \textbf{Units were screened before judging.} Of 212 reconstructed speaker units, 62 were
-  rejected as unjudgeable and never sent --- untrusted diarization, unassigned speaker, or fewer
-  clean words than the human-set minimum --- leaving 150. A further three were withdrawn from the
+  rejected as unjudgeable and never sent, for untrusted diarization, an unassigned speaker, or
+  fewer clean words than the human-set minimum, leaving 150. A further three were withdrawn from the
   speaker-level task after review, giving the 147 units carrying
   \texttt{speaker\_level\_valid = true}.
   \item \textbf{Out-of-domain material was caught by reading, not by a filter.} Two episodes were
@@ -534,6 +597,35 @@ Identifiers are hierarchical and stable: \texttt{roll::episode::turnNNNN}, with
 structure should be understandable without opening every file. Include raw and processed
 components separately.}
 
+\subsection{A worked example: one moment of audio, end to end}
+
+Before the file listings, Figure~\ref{fig:sample} follows a single moment of one episode through every stage of
+the release, so that a reader can see what the data actually contains rather than only how it is
+filed. Nothing in the figure is retyped: \texttt{make\_sample\_figure.py} reads it straight out
+of the released files, so it cannot drift from the corpus.
+
+% Figures 1 and 2 are hand-numbered TikZ drawings, so the float counter has to
+% start after them or the captions would restart at 1.
+\setcounter{figure}{2}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=\textwidth]{figs/dataset_sample.png}
+\caption{One moment of \texttt{2107006::ep005}, from audio to speaker verdict. Diarization hands
+the floor to speaker~3 at 2328.8\,s; Whisper decodes the next window with a timestamp on every
+word; the window is merged back into a speaker turn; the judge labels that turn
+\texttt{negative} and cites the span highlighted in the text; and the speaker's verdict for the
+whole episode is \texttt{mixed}. The last two disagree on purpose. This guest is favourable about
+what migrant labour contributes and unfavourable about stalled reform, and the release records
+both levels rather than forcing one of them.}\label{fig:sample}
+\end{figure}
+
+\vspace{2pt}
+Three properties of the corpus are visible in that single figure. A decode-window boundary is not
+a speaker boundary, which is why the windows are merged back into turns before anything is
+labelled. Turn labels carry a cited span, so a reader can check a label against the text without
+listening to the audio. And the speaker verdict is a separate judgement, not a tally of the turn
+labels beneath it.
+
 \subsection{Repository / Folder Structure}
 
 \begingroup\footnotesize
@@ -543,21 +635,23 @@ components separately.}
 \endfirsthead
 \hline \thd{Folder / file} & \thd{Contents} & \thd{Raw / processed / metadata} \\ \hline \endhead
 \texttt{<roll>/*.mp3, *.mpeg}          & Source broadcast audio as collected (not redistributed) & Raw \\ \hline
-\texttt{<roll>/results/}\newline\texttt{raw/}           & \texttt{registry.csv}, \texttt{episode\_metadata.csv} --- per-episode provenance and checksums & Metadata \\ \hline
+\texttt{<roll>/results/}\newline\texttt{raw/}           & \texttt{registry.csv}, \texttt{episode\_metadata.csv}: per-episode provenance and checksums & Metadata \\ \hline
 \texttt{<roll>/results/}\newline\texttt{processed/}     & 16 kHz mono WAV per episode;\newline \texttt{hygiene\_report.json} & Processed \\ \hline
-\texttt{<roll>/results/}\newline\texttt{diarization/}   & \texttt{epNNN.json}, \texttt{epNNN.rttm},\newline \texttt{epNNN\_raw.rttm} --- speaker segments & Processed \\ \hline
-\texttt{<roll>/results/}\newline\texttt{asr/}           & \texttt{epNNN.json} --- transcripts with per-word timings and probabilities & Processed \\ \hline
-\texttt{<roll>/results/}\newline\texttt{fused/}         & \texttt{epNNN.json} --- word $\rightarrow$ speaker aligned utterances (schema 2.0) & Processed \\ \hline
+\texttt{<roll>/results/}\newline\texttt{diarization/}   & \texttt{epNNN.json}, \texttt{epNNN.rttm},\newline \texttt{epNNN\_raw.rttm}: speaker segments & Processed \\ \hline
+\texttt{<roll>/results/}\newline\texttt{asr/}           & \texttt{epNNN.json}: transcripts with per-word timings and probabilities & Processed \\ \hline
+\texttt{<roll>/results/}\newline\texttt{fused/}         & \texttt{epNNN.json}: word $\rightarrow$ speaker aligned utterances (schema 2.0) & Processed \\ \hline
 \texttt{<roll>/results/}\newline\texttt{drafts/}, \texttt{annotated/} & Annotation drafts and review status & Metadata \\ \hline
-\texttt{<roll>/results/}\newline\texttt{aggregated/}    & \texttt{submission\_gates.json}\newline --- automated quality gates & Metadata \\ \hline
-\texttt{<roll>/results/}\newline\texttt{artifacts/},\newline \texttt{models/} & \texttt{run\_manifest.json},\newline \texttt{manifest.json} --- config, checksums, model provenance & Metadata \\ \hline
+\texttt{<roll>/results/}\newline\texttt{aggregated/}    & \texttt{submission\_gates.json}\newline automated quality gates & Metadata \\ \hline
+\texttt{<roll>/results/}\newline\texttt{artifacts/},\newline \texttt{models/} & \texttt{run\_manifest.json},\newline \texttt{manifest.json}: config, checksums, model provenance & Metadata \\ \hline
 \texttt{speaker\_sentiment/}\newline\texttt{data/} & \texttt{turns.jsonl}, \texttt{speakers.jsonl}, \texttt{judgements.jsonl}, \texttt{turns\_labelled.jsonl}, \texttt{speakers\_labelled.jsonl}, \texttt{turns\_\{train,val,test\}.jsonl}, \texttt{speakers\_\{train,val,test\}.jsonl} & Processed / ML-ready \\ \hline
 \texttt{speaker\_sentiment/}\newline\texttt{*.py} & \texttt{build\_speaker\_corpus.py}, \texttt{llm\_judge.py}, \texttt{make\_datasets.py}, \texttt{predict\_speakers.py} & Code \\ \hline
-\texttt{speaker\_sentiment/}\newline\texttt{*.ipynb} & \texttt{Speaker\_Sentiment\_BanglaBERT.ipynb} --- training, aggregation, ablation, verification & Code \\ \hline
+\texttt{speaker\_sentiment/}\newline\texttt{*.ipynb} & \texttt{Speaker\_Sentiment\_BanglaBERT.ipynb}: training, aggregation, ablation, verification & Code \\ \hline
 \texttt{speaker\_sentiment/}\newline\texttt{runs/} & Trained model, \texttt{metrics.json}, \texttt{test\_predictions.jsonl} & Results \\ \hline
 \texttt{sentiment/lexicon/}            & \texttt{financial\_targets.csv} (52 targets), \texttt{polarity\_cues.csv} (103 cues) & Metadata \\ \hline
 \texttt{README.md}                     & Access, pipeline, caveats and run instructions & Documentation \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 \endgroup
 
 \subsection{Data Dictionary}
@@ -571,19 +665,21 @@ for all release files is in Appendix~A.
 \thd{Variable} & \thd{Meaning} & \thd{Type} & \thd{Unit / range} & \thd{Allowed values} & \thd{Missing rule} \\ \hline
 \endfirsthead
 \hline \thd{Variable} & \thd{Meaning} & \thd{Type} & \thd{Unit / range} & \thd{Allowed values} & \thd{Missing rule} \\ \hline \endhead
-\texttt{turn\_id}      & Unique turn identifier & string & --- & \texttt{roll::ep::}\newline\texttt{turnNNNN} & never null \\ \hline
-\texttt{global\_episode} & Episode grouping key used for splitting & string & --- & \texttt{roll::epNNN} & never null \\ \hline
+\texttt{turn\_id}      & Unique turn identifier & string & n/a & \texttt{roll::ep::}\newline\texttt{turnNNNN} & never null \\ \hline
+\texttt{global\_episode} & Episode grouping key used for splitting & string & n/a & \texttt{roll::epNNN} & never null \\ \hline
 \texttt{speaker\_id}   & Diarization cluster index within the episode & integer & $\ge -1$ & $-1$ = unassigned & $-1$ \\ \hline
 \texttt{start\_sec}, \texttt{end\_sec} & Turn boundaries in the episode & float & seconds & $\ge 0$ & never null \\ \hline
-\texttt{text}          & Normalised Bangla transcript of the turn & string & --- & free text & \texttt{""} if empty \\ \hline
-\texttt{n\_words}      & Whitespace word count of \texttt{text} & integer & $\ge 0$ & --- & never null \\ \hline
-\texttt{asr\_confidence} & Mean log-probability over the turn's words & float & $\le 0$ & --- & null if no words \\ \hline
-\texttt{diarization\_trusted} & False for the five fallback-diarized episodes & boolean & --- & \texttt{true}/\texttt{false} & never null \\ \hline
-\texttt{role}          & Inferred conversational role & string & --- & \texttt{host}, \texttt{guest}, \texttt{minor}, \texttt{unassigned} & \texttt{unassigned} \\ \hline
-\texttt{label}         & Judge turn label (labelled files only) & string & --- & \texttt{negative}, \texttt{neutral}, \texttt{positive} & row dropped if \texttt{illegible} \\ \hline
-\texttt{judge\_confidence} & Judge's stated confidence in the turn label & float & $[0,1]$ & --- & never null \\ \hline
-\texttt{evidence}      & Verbatim quote supporting the label & string & --- & substring of \texttt{text} & \texttt{""} \\ \hline
+\texttt{text}          & Normalised Bangla transcript of the turn & string & n/a & free text & \texttt{""} if empty \\ \hline
+\texttt{n\_words}      & Whitespace word count of \texttt{text} & integer & $\ge 0$ & n/a & never null \\ \hline
+\texttt{asr\_confidence} & Mean log-probability over the turn's words & float & $\le 0$ & n/a & null if no words \\ \hline
+\texttt{diarization\_trusted} & False for the five fallback-diarized episodes & boolean & n/a & \texttt{true}/\texttt{false} & never null \\ \hline
+\texttt{role}          & Inferred conversational role & string & n/a & \texttt{host}, \texttt{guest}, \texttt{minor}, \texttt{unassigned} & \texttt{unassigned} \\ \hline
+\texttt{label}         & Judge turn label (labelled files only) & string & n/a & \texttt{negative}, \texttt{neutral}, \texttt{positive} & row dropped if \texttt{illegible} \\ \hline
+\texttt{judge\_confidence} & Judge's stated confidence in the turn label & float & $[0,1]$ & n/a & never null \\ \hline
+\texttt{evidence}      & Verbatim quote supporting the label & string & n/a & substring of \texttt{text} & \texttt{""} \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 \endgroup
 
 \emph{\small If the dataset has many variables, keep only representative rows here and place the
@@ -599,7 +695,7 @@ summary, and representative examples. Do not turn this into a full research-resu
 \hline
 \thd{Property} & \thd{Value} \\ \hline
 Unique episodes (after transcript-hash dedup) & 45 (from 46 processed, 56 registry rows) \\ \hline
-Episodes with trusted (\texttt{pyannote}) diarization & \textbf{45 --- all of them} \\ \hline
+Episodes with trusted (\texttt{pyannote}) diarization & \textbf{45, all of them} \\ \hline
 Episodes with fallback diarization & 0 (was 5 in build 1; re-diarized) \\ \hline
 Total audio & $\approx$28.6 h \\ \hline
 ASR decode windows & 5{,}327 \\ \hline
@@ -607,7 +703,7 @@ Speaker turns & \textbf{2{,}414} ($\approx$219{,}000 words) \\ \hline
 Turns by role & guest 1{,}236, host 926, unassigned 233, minor 19 \\ \hline
 Speaker--episode units & 212 total; 150 judged; 147 speaker-level valid (45 hosts, 103 guests, 2 minor) \\ \hline
 Turn labels produced & 1{,}811; \texttt{illegible} 181 (10.0\%) dropped \\ \hline
-Supervised turns & \textbf{1{,}630} --- negative 53.4\%, neutral 34.7\%, positive 11.9\% \\ \hline
+Supervised turns & \textbf{1{,}630}: negative 53.4\%, neutral 34.7\%, positive 11.9\% \\ \hline
 Speaker verdicts & negative 110, neutral 18, positive 11, mixed 8 \\ \hline
 Human sentiment labels & \textbf{0} (see Sections 9 and 12) \\ \hline
 \end{tabularx}
@@ -615,13 +711,13 @@ Human sentiment labels & \textbf{0} (see Sections 9 and 12) \\ \hline
 \vspace{4pt}
 Role structure separates cleanly and confirms the rubric behaved as designed: hosts take many
 short turns (mean 39 words) and are majority \texttt{neutral}, while guests take few long turns
-(mean 146 words) and carry the evaluative content. Table~1 gives the breakdown.
+(mean 146 words) and carry the evaluative content. Table~\ref{tab:roledist} gives the breakdown.
 
 \begin{table}[htbp]\centering
 \caption{Turn-label distribution by inferred speaker role over the 1{,}630 supervised turns.
 Host neutrality is the expected consequence of the rubric rule that a pointed question is
 elicitation rather than assertion. The pattern held after the corpus grew by 22\%, which is
-evidence the rubric was applied consistently across both judging rounds.}
+evidence the rubric was applied consistently across both judging rounds.}\label{tab:roledist}
 \begin{tabular}{|l|r|r|r|r|}
 \hline
 \thd{Role} & \thd{Negative} & \thd{Neutral} & \thd{Positive} & \thd{Total} \\ \hline
@@ -641,7 +737,7 @@ the distinction between data cleaning and model-specific preprocessing.}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=3pt,topsep=2pt]
   \item \textbf{Cleaning.} One duplicate episode was removed by transcript hash. Repetition-loop
-        turns --- an ASR failure mode in which one syllable repeats for hundreds of characters ---
+        turns, an ASR failure mode in which one syllable repeats for hundreds of characters,
         are detected and flagged \texttt{flag\_repetition\_loop}. Turns below a minimum length are
         flagged \texttt{flag\_too\_short}.
   \item \textbf{Window $\rightarrow$ turn reconstruction.} The ``utterances'' in the fused files
@@ -670,7 +766,7 @@ the distinction between data cleaning and model-specific preprocessing.}
   \item \textbf{Leakage control.} The grouping key is \texttt{global\_episode}. Splits are
         constructed episode-disjointly and \texttt{make\_datasets.py} \emph{asserts} disjointness
         rather than assuming it, because two turns from one talk show share the panel, the topic,
-        the presenter's phrasing and the same ASR error signature --- a random row split would let
+        the presenter's phrasing and the same ASR error signature, so a random row split would let
         the model recognise the episode instead of the stance. The duplicate episode was removed
         \emph{before} splitting, so the same panel cannot appear on both sides.
         \textbf{Known residual risk:} a programme-level split is the stricter control, but a
@@ -696,9 +792,11 @@ the data, not merely model accuracy.}
 \thd{Label quality}  & Single-pass LLM judge with a fixed, byte-identical rubric and structured JSON output. Every turn label carries a confidence and an evidence quote; 58\% of the 715 quotes are verbatim spans of the cited turn and 42\% are close paraphrases (measured, both rounds alike), so labels are spot-checkable but the quotes are not exact provenance. \textbf{Internal coherence measured:} rebuilding each speaker verdict bottom-up from its own turn labels, without showing the aggregator the holistic verdict, reproduces it 85.0\% of the time exactly (\texttt{word\_weighted}) and 87.1\% by polar direction (\texttt{majority\_vote}). Coherence \emph{rose} from 78.7\%/83.6\% when the corpus grew from 72 to 150 judged units, which is evidence of a stable rubric rather than drift. \textbf{Not yet measured:} inter-pass self-consistency (labels are one pass) and agreement with human annotators. \\ \hline
 \thd{Measurement quality} & Fixed decoding settings (beam 5, repetition penalty 0.8, 28 s chunks) and fixed diarization thresholds across all episodes. Per-word ASR probabilities and per-turn mean confidence are retained so low-confidence material can be filtered downstream. Audio hygiene reports are stored per episode. \\ \hline
 \thd{Integrity}      & SHA-256 recorded for every source file in \texttt{registry.csv} and for every produced file in \texttt{run\_manifest.json}; \texttt{sha256\_verified} is true for all registry rows. Exact-duplicate detection is by transcript hash. \\ \hline
-\thd{Representativeness / bias} & Class imbalance persists (positive is 11.9\% of supervised turns, up from 10.2\%). Strong negative prior (110 of 150 speaker verdicts). This is \emph{partly real} --- the episodes cover a banking crisis, a reserve crisis, an energy shock and inflation --- and \emph{partly selection and possible judge drift}; the two explanations are separated only by human verification. Diarization is now uniform: all 45 episodes are \texttt{pyannote}. Two episodes contain out-of-domain material (one law-and-order interview; one news bulletin spliced onto a talk show), and both are labelled \texttt{illegible} throughout so they never enter supervision. \\ \hline
+\thd{Representativeness / bias} & Class imbalance persists (positive is 11.9\% of supervised turns, up from 10.2\%). Strong negative prior (110 of 150 speaker verdicts). This is \emph{partly real}, since the episodes cover a banking crisis, a reserve crisis, an energy shock and inflation, and \emph{partly selection and possible judge drift}; the two explanations are separated only by human verification. Diarization is now uniform: all 45 episodes are \texttt{pyannote}. Two episodes contain out-of-domain material (one law-and-order interview; one news bulletin spliced onto a talk show), and both are labelled \texttt{illegible} throughout so they never enter supervision. \\ \hline
 \thd{Reproducibility} & \texttt{build\_speaker\_corpus.py} regenerates \texttt{turns.jsonl} and \texttt{speakers.jsonl} from the fused bundles in $\approx$20 s; \texttt{make\_datasets.py} regenerates all six split files in $\approx$5 s with an explicit seed (13). Pipeline seed 17 and every model revision hash are recorded in \texttt{run\_manifest.json}. The baseline trains on CPU in $\approx$60 min, so results are re-derivable without a GPU. \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 
 \vspace{2pt}
 \textbf{Gates that remain open, reported honestly.} \texttt{submission\_gates.json} records
@@ -711,31 +809,55 @@ Every number in Section 10 is therefore bounded by an unmeasured word error rate
 \emph{\small Compare the dataset with similar, related and competitive datasets with proper
 citation in tabular form.}
 
-\begin{longtable}{|L{3.2cm}|L{2.6cm}|L{1.8cm}|L{2.4cm}|L{4.2cm}|}
+\vspace{2pt}
+Four properties decide whether a resource can answer the question in Figure~1. It has to be
+\textbf{Bangla}; it has to be \textbf{spoken} material rather than writing; it has to keep
+\textbf{who said what} instead of pooling a conversation into one text; and it has to carry a
+\textbf{verdict on the person}, not only on each sentence. The table below scores the nearest resources
+on those four. Each is strong on some and silent on others; the gap this dataset fills is the
+row where all four are present at once.
+
+\begin{longtable}{|L{3.0cm}|L{1.5cm}|L{1.3cm}|L{1.6cm}|L{1.7cm}|L{4.4cm}|}
 \hline
-\thd{Dataset} & \thd{Domain / modality} & \thd{Language} & \thd{Unit labelled} & \thd{Relation to this dataset} \\ \hline
+\thd{Dataset} & \thd{Bangla} & \thd{Spoken} & \thd{Speaker kept apart} & \thd{Verdict on the person} & \thd{What it gives, and what it cannot} \\ \hline
 \endfirsthead
-\hline \thd{Dataset} & \thd{Domain} & \thd{Language} & \thd{Unit} & \thd{Relation} \\ \hline \endhead
-BLUB / BanglaBERT benchmark \cite{banglabert} & Mixed written text & Bangla & Sentence / document & Source of the backbone encoder; written-text domain, no speaker structure \\ \hline
-BLP-2023 Task 2 \cite{blp2023} & Social media (written) & Bangla & Post & Closest Bangla sentiment benchmark; different genre, no speaker attribution \\ \hline
-BAN-ABSA \cite{banabsa} / BABSA \cite{babsa} & News and reviews (written) & Bangla & Aspect--sentence & Aspect-based; this dataset's 52-target lexicon enables an analogous speaker $\times$ target extension \\ \hline
-MELD / IEMOCAP (ERC) \cite{erc} & TV / acted dialogue, multimodal & English & Utterance & Conversational and multimodal, but utterance-level; no aggregated speaker verdict \\ \hline
-Earnings-call transcript corpora \cite{earnings} & Financial speech (transcribed) & English & Document / speaker & Nearest analogue in argument; English, professionally transcribed, not ASR-noisy \\ \hline
-\textbf{This dataset} & \textbf{TV talk show, audio + ASR} & \textbf{Bangla} & \textbf{Speaker turn + speaker--episode} & --- \\ \hline
+\hline \thd{Dataset} & \thd{Bangla} & \thd{Spoken} & \thd{Speaker} & \thd{Person verdict} & \thd{Relation} \\ \hline \endhead
+BLUB / BanglaBERT \cite{banglabert} & Yes & No & No & No & Supplies the encoder this work fine-tunes. Written text, one label per document. \\ \hline
+BLP-2023 Task 2 \cite{blp2023} & Yes & No & No & No & The closest Bangla sentiment benchmark. Social-media posts have a single author and no floor to share. \\ \hline
+BAN-ABSA \cite{banabsa} / BABSA \cite{babsa} & Yes & No & No & No & Ties sentiment to a target, which this work also needs, but the target is an aspect in written text, never a participant in a conversation. \\ \hline
+MELD / IEMOCAP \cite{erc} & No & Yes & Yes & No & Proves conversational, speaker-aware labelling works. English, scripted or acted, and the label stops at the utterance. \\ \hline
+Earnings-call corpora \cite{earnings} & No & Yes & Yes & Partly & Nearest in intent: financial speech attributed to named executives. English, professionally transcribed, so it never tests robustness to ASR error. \\ \hline
+\textbf{This dataset} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} & \textbf{Yes} & \textbf{Bangla broadcast debate, ASR-noisy, 2{,}414 turns kept per speaker, 147 speaker--episode verdicts with a stance score.} \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
+
+\vspace{2pt}
+\textbf{The distinction in one sentence.} Every Bangla sentiment resource we could find labels
+writing, and every speaker-aware conversational resource we could find is in English and stops at
+the utterance; this dataset is the intersection, and it adds the level neither side has, which is
+a verdict on a participant across a whole episode.
 
 \emph{\small Identify and mention in points the novelty and significant properties of the dataset
 w.r.t.\ existing datasets.}
 
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=2pt]
-  \item \textbf{Dual-level supervision.} Turn labels and a holistic speaker verdict are produced in
-        one judging call over the speaker's full script, so the two levels are coherent by
-        construction; measured bottom-up/top-down agreement is 85.0\% exact and 87.1\% directional.
+  \item \textbf{Two supervised tasks, not one.} The release supports turn sentiment (1{,}630
+        labelled turns) and a separate verdict on each speaker across a whole episode (147 units
+        with a stance score). Both are given a full evaluation in Section 10, with baselines,
+        confusion matrices and slice breakdowns for each.
+  \item \textbf{The second task is measurably not reducible to the first.} Both levels come from
+        one judging call over the speaker's full script, so they are coherent by construction, and
+        rebuilding the verdict from its own turn labels reproduces it 85.0\% of the time. The
+        remaining 15\% is the point: an oracle holding the gold turn labels still cannot recover
+        those verdicts, so roughly one speaker in seven can only be judged from the episode. That
+        is the headroom a speaker-level model exists to capture, and no utterance-level corpus
+        exposes it.
   \item \textbf{Speaker--episode as a released unit.} Existing conversational sentiment corpora stop
-        at the utterance; this release ships the aggregated speaker unit with a continuous stance
+        at the utterance; this release ships the speaker unit with a continuous stance
         score, which is the unit financial analysis actually needs.
   \item \textbf{First Bangla speaker-attributed sentiment resource in broadcast financial speech},
-        to the best of our search --- the existing Bangla resources are written text.
+        to the best of our search; the existing Bangla resources are written text.
   \item \textbf{Genre-specific rubric.} The host-question-is-neutral and target-orientation rules
         are specific to panel discussion and to economic vocabulary, and the role split in the
         released labels demonstrates they took effect.
@@ -758,24 +880,44 @@ the emphasis on dataset usability and reproducibility rather than claiming a new
 
 \subsection{ML task definition}
 
-Two linked supervised tasks. \textbf{Primary:} turn-level 3-class sentiment classification ---
-input $X$ is the pair (\texttt{role}, \texttt{turn text}), target $y \in$ \{\texttt{negative},
-\texttt{neutral}, \texttt{positive}\}, unit of prediction is one speaker turn. \textbf{Secondary:}
-speaker-level stance --- predicted turn labels for one speaker--episode unit are aggregated into a
-verdict in \{\texttt{negative}, \texttt{mixed}, \texttt{neutral}, \texttt{positive}\} plus a
-continuous stance score. The practical output is a speaker-resolved stance signal per episode.
+The dataset defines \textbf{two tasks, not one}, and they are evaluated separately because they
+are different problems.
+
+\vspace{2pt}
+\textbf{Task A, turn sentiment.} Input $X$ is the pair (\texttt{role}, \texttt{turn text}); the
+target $y \in$ \{\texttt{negative}, \texttt{neutral}, \texttt{positive}\}; the unit of prediction
+is one speaker turn. There are 1{,}630 supervised turns.
+
+\vspace{2pt}
+\textbf{Task B, the speaker's position across the whole episode.} Input is everything one speaker
+said in one episode; the target $y \in$ \{\texttt{negative}, \texttt{mixed}, \texttt{neutral},
+\texttt{positive}\} together with a continuous stance score in $[-1, 1]$; the unit of prediction
+is one speaker--episode unit. There are 147 such units.
+
+\vspace{2pt}
+\textbf{Why Task B is not Task A with a summing step.} A verdict on a person is not the average of
+their sentences. A panellist can concede a point warmly and still hold a negative position; a
+host can sound severe while taking no position at all; and the \texttt{mixed} verdict has no
+turn-level counterpart, because it describes a speaker who is genuinely favourable about one
+thing and unfavourable about another. Figure~\ref{fig:sample} shows a real case from the release: a guest whose
+eight turns are three positive, three neutral and two negative, and whose episode verdict is
+\texttt{mixed} with a stance of $+0.15$. The Task B results below quantify the gap. Even an oracle that is
+handed the judge's own gold turn labels and combines them perfectly recovers only 85.0\% of the
+speaker verdicts, so roughly one verdict in seven is not present in the turn labels at all and
+has to be read from the episode. Task A therefore cannot subsume Task B, and the report measures
+both.
 
 \subsection{Data partitioning strategy}
 
 Episode-grouped split, \textbf{never} a row split, with seed 13 and the configuration
 \texttt{--group-by episode --test-episodes 9 --val-episodes 7}. Seven candidate seeds were
 compared on class balance before one was fixed; seed 13 is the only one placing all four speaker
-classes and a workable share of positive turns in every partition. Table~2 gives the partition.
+classes and a workable share of positive turns in every partition. Table~\ref{tab:partition} gives the partition.
 
 \begin{table}[htbp]\centering
 \caption{Episode-disjoint partition of the supervised corpus (seed 13). All three splits carry
 all three turn classes and all four speaker classes; the degenerate validation split reported in
-build 1 no longer occurs.}
+build 1 no longer occurs.}\label{tab:partition}
 \begin{tabular}{|l|r|r|r|r|r|r|}
 \hline
 \thd{Split} & \thd{Episodes} & \thd{Speakers} & \thd{Turns} & \thd{Neg.} & \thd{Neu.} & \thd{Pos.} \\ \hline
@@ -795,7 +937,7 @@ meaningful for the first time.
 
 Unicode NFC plus the \texttt{csebuetnlp} normalizer; \texttt{role\_turn} sentence-pair
 construction; BanglaBERT WordPiece tokenisation at \texttt{max\_len} 128 (CPU run) or 256 (GPU). No vocabulary, scaler or
-statistic is fitted on validation or test data --- the tokenizer is pretrained and the class
+statistic is fitted on validation or test data: the tokenizer is pretrained and the class
 weights are computed on the training split only.
 
 \subsection{ML model(s) and hyperparameters}
@@ -810,7 +952,7 @@ weights are computed on the training split only.
 \subsection{Evaluation metrics}
 
 \textbf{Macro-F1} is the headline metric because the corpus is strongly imbalanced and the
-positive class --- the one a financial sentiment index most needs --- is the rarest. Reported
+positive class, the one a financial sentiment index most needs, is the rarest. Reported
 alongside: per-class precision/recall, the majority-class macro-F1 floor, and, at the speaker
 level, exact verdict accuracy, polar-direction accuracy, and Pearson correlation between the
 predicted and judged stance scores.
@@ -837,7 +979,7 @@ models were selected on the validation split and evaluated once on test.}
 \begin{tabular}{|l|c|c|c|c|L{3.1cm}|}
 \hline
 \thd{Model} & \thd{Val macro-F1} & \thd{Test macro-F1} & \thd{Test acc.} & \thd{$\kappa$} & \thd{Notes} \\ \hline
-Majority class            & ---    & 0.236 & 0.549 & 0.000 & Floor \\ \hline
+Majority class            & n/a    & 0.236 & 0.549 & 0.000 & Floor \\ \hline
 TF--IDF word 1--2 + LogReg & 0.578 & 0.529 & 0.623 & 0.339 & Non-neural reference; $C=2$ \\ \hline
 \textbf{BanglaBERT (\texttt{role\_turn})} & \textbf{0.704} & \textbf{0.670} & \textbf{0.701} & \textbf{0.496} & Main baseline; class-weighted \\ \hline
 \end{tabular}
@@ -845,7 +987,7 @@ TF--IDF word 1--2 + LogReg & 0.578 & 0.529 & 0.623 & 0.339 & Non-neural referenc
 
 \begin{table}[htbp]\centering
 \caption{Per-class turn-level performance of the BanglaBERT baseline on the test split.
-The rarest class, \texttt{positive}, is the weakest but remains far above chance --- the
+The rarest class, \texttt{positive}, is the weakest but remains far above chance; the
 class-weighted loss is what keeps its recall usable.}
 \begin{tabular}{|l|c|c|c|r|}
 \hline
@@ -861,8 +1003,8 @@ Weighted avg & 0.713 & 0.701 & 0.704 & 324 \\ \hline
 \begin{figure}[htbp]\centering
 \includegraphics[width=\textwidth]{figs/training_curves.png}
 \caption{Training loss and validation performance per epoch. Validation macro-F1 peaks at epoch 4
-(0.704) and then declines while training loss keeps falling --- the model begins to overfit 1{,}009
-training turns, and the epoch-4 checkpoint is the one restored and evaluated.}
+(0.704) and then declines while training loss keeps falling. The model begins to overfit the
+1{,}009 training turns, and the epoch-4 checkpoint is the one restored and evaluated.}
 \end{figure}
 
 \begin{figure}[htbp]\centering
@@ -889,8 +1031,8 @@ the worst ASR quartile loses about 8 points of macro-F1 relative to the best.}
 \hline
 \thd{Slice} & \thd{n} & \thd{Mean ASR conf.} & \thd{Accuracy} & \thd{Macro-F1} \\ \hline
 \multicolumn{5}{|l|}{\textit{by inferred role}} \\ \hline
-Guest & 184 & --- & 0.696 & 0.610 \\ \hline
-Host  & 140 & --- & 0.707 & 0.468 \\ \hline
+Guest & 184 & n/a & 0.696 & 0.610 \\ \hline
+Host  & 140 & n/a & 0.707 & 0.468 \\ \hline
 \multicolumn{5}{|l|}{\textit{by ASR confidence quartile (mean log-probability per word)}} \\ \hline
 Q1 (worst) & 83 & $-0.061$ & 0.675 & 0.651 \\ \hline
 Q2         & 79 & $-0.044$ & 0.709 & 0.658 \\ \hline
@@ -899,17 +1041,63 @@ Q4 (best)  & 80 & $-0.028$ & 0.738 & 0.729 \\ \hline
 \end{tabular}
 \end{table}
 
-\subsection{Speaker-level results}
+\subsection{Task B results: the speaker's position across the whole episode}
 
-The speaker verdict is the unit the dataset exists for. Two routes were evaluated: aggregating the
-predicted turn labels with a fixed rule (Section 10.7, Table~6), and a hierarchical model that
-learns the aggregation (Table~7).
+This is the unit the dataset was built for, and it is reported with the same apparatus as Task A:
+a baseline ladder, a confusion matrix, per-class scores, slice breakdowns and an error analysis.
+
+\vspace{2pt}
+\textbf{Protocol.} All 147 valid speaker units are scored under 5-fold \texttt{GroupKFold}
+grouped by episode, so no episode contributes to both sides of a fold and every unit is held out
+exactly once. Every system in Table~\ref{tab:taskb-systems} sees the identical fold assignment. This replaces the
+30-unit held-out split used for Task A, which is too small to separate four classes: a single
+unit there moves accuracy by more than three points.
+
+\vspace{2pt}
+\textbf{Read macro-F1, not accuracy.} 110 of the 147 units are \texttt{negative}, so a model that
+answers \texttt{negative} every time is already 74.8\% accurate while being useless. Table~\ref{tab:taskb-systems} shows
+exactly this trap. The TF--IDF control posts the \emph{highest} accuracy of any learned system
+(0.775) and the \emph{second-lowest} macro-F1 (0.342), because it mostly reproduces the prior. The
+hierarchical model gives up 12 points of accuracy and gains 19 points of macro-F1, which is the
+trade a speaker-resolved index actually wants: it is the only system that identifies the
+minority positions an analyst is looking for.
+
+\begin{table}[htbp]\centering
+\caption{Task B systems over all 147 speaker units, 5-fold episode-disjoint cross-validation.
+The oracle is not a competitor: it is handed the judge's own gold turn labels and combines them
+word-weighted, so it bounds what any turn-aggregation route can reach. Its 85.0\% ceiling is the
+measured reason Task B needs its own model.}\label{tab:taskb-systems}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\thd{System} & \thd{Accuracy} & \thd{Macro-F1} & \thd{Notes} \\ \hline
+Majority class & 0.748 & 0.214 & always predicts \texttt{negative} \\ \hline
+TF--IDF over the speaker's script & \textbf{0.775} & 0.342 & bag-of-words control \\ \hline
+\textbf{Hierarchical BanglaBERT} & 0.653 & \textbf{0.530} & attention pooling over turn embeddings \\ \hline
+\textit{Oracle: gold turn labels aggregated} & \textit{0.850} & \textit{0.664} & ceiling, not a model \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.92\textwidth]{figs/speaker_ladder.png}
+\caption{Task B, the same four systems. Accuracy and macro-F1 move in opposite directions across
+the ladder, which is why accuracy alone would rank the weakest system first. The hatched pair is
+the oracle ceiling.}
+\end{figure}
+
+\vspace{2pt}
+\textbf{The second route: aggregating Task A predictions.} A speaker verdict can also be reached
+without a speaker model at all, by applying a fixed rule to the turn labels the Task A classifier
+predicts. This is the route the shipped command-line scorer uses, and it is reported on the
+30-unit held-out split so that it lines up with the Task A evaluation. Table~\ref{tab:aggrules} gives it. The
+figures there look higher than Table~\ref{tab:taskb-systems} and are not comparable with it: 30 units against 147, a
+single split against cross-validation, and a rule chosen on train+val rather than learned. It is
+included because it is what the tool does, not as a rival measurement.
 
 \begin{table}[htbp]\centering
 \caption{Speaker-level results on the 30 valid test speaker units, by aggregation rule. The rule
 was selected on the 117 train+val units, where \texttt{hard\_vote} won (exact accuracy 0.752), and
 that rule is the one reported on test. \texttt{top\_k} transfers to a higher macro-F1, but quoting
-it would be selection on the test set.}
+it would be selection on the test set.}\label{tab:aggrules}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 \thd{Aggregation rule} & \thd{Exact acc.} & \thd{Direction acc.} & \thd{Stance corr.} & \thd{Macro-F1} \\ \hline
@@ -925,7 +1113,7 @@ it would be selection on the test set.}
 \caption{Hierarchical speaker model (frozen turn encoder + attention pooling), out-of-fold over
 \textbf{all 147 valid speaker units} under 5-fold \texttt{GroupKFold} grouped by episode. Because
 every labelled speaker is used as test data exactly once, this is the speaker-level figure the
-report quotes; the 30-unit held-out split in Table~6 is a sanity check, not a measurement.}
+report quotes; the 30-unit held-out split in Table~\ref{tab:aggrules} is a sanity check, not a measurement.}
 \begin{tabular}{|l|c|c|c|r|}
 \hline
 \thd{Class} & \thd{Precision} & \thd{Recall} & \thd{F1} & \thd{Units} \\ \hline
@@ -937,12 +1125,67 @@ report quotes; the 30-unit held-out split in Table~6 is a sanity check, not a me
 \end{tabular}
 \end{table}
 
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.96\textwidth]{figs/speaker_confusion.png}
+\caption{Task B confusion matrix over the 147 out-of-fold speaker verdicts. The model never
+labels a speaker \texttt{positive} unless it is right (precision 1.000), but it reaches only 45\%
+of the positive speakers. The costly error is the opposite one: 25 genuinely negative speakers
+are called \texttt{mixed}, which is the model hedging on a class it has only eight examples of.}
+\end{figure}
+
+\vspace{2pt}
+\textbf{Where Task B fails.} Of 51 errors, exactly half (25) are \texttt{negative} speakers
+called \texttt{mixed}. The \texttt{mixed} class is the problem: 8 training examples across the
+whole corpus, an F1 of 0.105, and 30 predictions made where only 8 were warranted. It is
+over-predicted because a speaker with any favourable turn at all looks mixed to the pooling
+layer. The other direction is clean: no speaker is ever called \texttt{positive} wrongly, and
+\texttt{neutral} recall is 0.778. Collapsing \texttt{mixed} into the polar classes would raise
+the headline, so it is worth saying plainly that we did not do that. The class is small because
+genuinely two-sided speakers are rare, not because the label is ill-defined, and Figure~\ref{fig:sample} shows
+one being applied correctly.
+
+\begin{table}[htbp]\centering
+\caption{Task B accuracy and macro-F1 by slice. The model is weakest on the speakers who talk
+most, which is the opposite of the Task A pattern and is consistent with the \texttt{mixed}
+confusion above: the longer a speaker holds the floor, the more likely they say something
+favourable somewhere, and the more likely the pooling layer hedges.}
+\begin{tabular}{|l|r|c|c|}
+\hline
+\thd{Slice} & \thd{Units} & \thd{Accuracy} & \thd{Macro-F1} \\ \hline
+\multicolumn{4}{|l|}{\textit{by inferred role}} \\ \hline
+Host  & 45 & 0.689 & 0.463 \\ \hline
+Guest & 101 & 0.644 & 0.381 \\ \hline
+\multicolumn{4}{|l|}{\textit{by how much the speaker said}} \\ \hline
+1--4 turns   & 28 & 0.643 & 0.531 \\ \hline
+5--12 turns  & 74 & 0.662 & \textbf{0.607} \\ \hline
+13+ turns    & 45 & 0.644 & 0.324 \\ \hline
+\multicolumn{4}{|l|}{\textit{by transcript quality}} \\ \hline
+\texttt{good} and \texttt{fair} & 144 & 0.660 & 0.542 \\ \hline
+\texttt{poor}                   & 3 & 0.333 & 0.167 \\ \hline
+\end{tabular}
+\end{table}
+
+\vspace{2pt}
+\textbf{What the two tasks together say about the corpus.} Task A recovers turn sentiment at 0.670
+macro-F1 against a 0.236 floor, so the turn labels are learnable. Task B recovers the speaker
+verdict at 0.530 against a 0.214 floor, so the speaker labels are learnable too, and by a wider
+relative margin, but it sits well under the 0.664 oracle. The distance between 0.530 and 0.664 is
+what a better Task B model could still win by reading the turns more carefully; the distance
+between 0.664 and 1.000 is what no turn-aggregation method can win at all, and is the part of the
+speaker verdict that lives in the episode rather than in any single turn. Both figures are
+agreement with the judge, not with human ground truth.
+
+\vspace{2pt}
+\textbf{Reproducing Task B.} \texttt{speaker\_level\_eval.py} recomputes every number in this
+subsection, including the baselines, from the released out-of-fold predictions in about 15
+seconds on CPU; \texttt{make\_speaker\_figs.py} redraws the two figures.
+
 \textbf{The shipped scorer reproduces these numbers.} The command-line tool
 \texttt{predict\_speakers.py} reads the rule, input mode and \texttt{max\_len} from
 \texttt{metrics.json} so it cannot silently disagree with the notebook that trained the model.
 Run end-to-end on CPU over the 324 held-out turns it recovers all 30 test speaker units and
-reproduces the notebook's held-out figures exactly --- exact accuracy 0.867 and stance
-correlation 0.451 under the selected \texttt{hard\_vote} rule --- in 47 seconds without a GPU.
+reproduces the notebook's held-out figures exactly (exact accuracy 0.867 and stance
+correlation 0.451 under the selected \texttt{hard\_vote} rule) in 47 seconds without a GPU.
 All 324 turn-level predictions are identical to the ones the notebook wrote, which also shows
 that the optional \texttt{csebuetnlp} normaliser is not load-bearing on this corpus: the CPU run
 used the NFC fallback and still matched every label.
@@ -953,7 +1196,7 @@ over-interpreting performance.}
 The baselines demonstrate that the corpus supports a valid supervised workflow at both levels. At
 the turn level a standard Bangla encoder reaches macro-F1 0.670 against a 0.236 floor and a 0.529
 non-neural reference, from 1{,}009 training turns under an episode-disjoint split, with
-$\kappa=0.496$ --- moderate agreement with the judge on a three-class problem. At the speaker level,
+$\kappa=0.496$, which is moderate agreement with the judge on a three-class problem. At the speaker level,
 aggregating those predictions reproduces the judge's verdict on 26 of 30 held-out speakers, and the
 hierarchical model over all 147 units reaches 0.653 accuracy.
 
@@ -977,12 +1220,12 @@ correctly.}
 \begin{itemize}[leftmargin=1.4em,itemsep=3pt,topsep=2pt]
   \item \textbf{Loading.} Download the repository and read the JSONL files line by line
         (\texttt{json.loads} per line, UTF-8). For a model-ready corpus, use
-        \texttt{turns\_\{train,val,test\}.jsonl} directly --- no rebuild is needed. To re-derive
+        \texttt{turns\_\{train,val,test\}.jsonl} directly; no rebuild is needed. To re-derive
         from the fused bundles, run \texttt{build\_speaker\_corpus.py} ($\approx$20 s) then
         \texttt{make\_datasets.py} ($\approx$5 s).
   \item \textbf{Environment.} Python 3.10+, \texttt{torch} 2.12, \texttt{transformers},
         \texttt{scikit-learn}, \texttt{pandas}, \texttt{matplotlib}. Install the
-        \texttt{csebuetnlp} normalizer --- BanglaBERT was pretrained on normalised text and the
+        \texttt{csebuetnlp} normalizer, because BanglaBERT was pretrained on normalised text and the
         fallback to bare NFC costs measurable F1. On Windows, prefix commands with
         \texttt{python -X utf8} or the console encoder fails on Bangla.
   \item \textbf{Conventions.} \texttt{speaker\_id} is \textbf{episode-local}: \texttt{Speaker 0} in
@@ -993,14 +1236,15 @@ correctly.}
   \item \textbf{Precautions.} Filter to \texttt{diarization\_trusted = true} for any claim about
         speaker attribution. Filter to \texttt{speaker\_level\_valid = true} for any speaker-level
         evaluation. Exclude \texttt{2107015::ep002} from programme-level claims (out of domain).
-        Do not tune on the speaker-level validation split --- it has six units and two of four
-        classes are thin; use \texttt{GroupKFold} over all 147 valid units instead.
+        Do not tune on the speaker-level validation split. It holds 23 units, and two of its
+        four classes have only two members each, so use \texttt{GroupKFold} over all 147 valid
+        units instead.
   \item \textbf{Reuse.} The retained audio supports acoustic and multimodal extensions (wav2vec2 /
         WavLM branches); the 52-target lexicon supports speaker $\times$ target aspect-based
         sentiment; the per-word ASR probabilities support ASR-robustness work on confusion
         networks; and the judged corpus supports LLM-judge calibration studies.
   \item \textbf{Inappropriate uses.} Do not present model output as the identified opinion of a
-        named individual --- speaker IDs are clustering predictions, not identities. Do not quote
+        named individual, because speaker IDs are clustering predictions, not identities. Do not quote
         the macro-F1 figures as human-validated accuracy. Do not use this corpus to make trading or
         policy decisions without the human-verification step in Section 12.
 \end{itemize}
@@ -1031,8 +1275,8 @@ before quoting a figure as final. \texttt{positive} and \texttt{mixed} number on
 speaker units in the entire corpus. A majority of episodes carry placeholder or empty programme
 titles, which prevents the stricter programme-level split. Two episodes contain out-of-domain
 material and are excluded by labelling rather than deletion. The corpus is negative-dominant
-(53\%), partly because the period genuinely was --- a banking crisis, an energy shock and
-sustained inflation --- and partly through selection; these explanations are separable only by
+(53\%), partly because the period genuinely was, with a banking crisis, an energy shock and
+sustained inflation, and partly through selection; these explanations are separable only by
 the human-verification sample.
 
 \textbf{Two build-1 limitations have been removed} and are recorded here for transparency rather
@@ -1062,22 +1306,24 @@ present it as one. \\ \hline
 \thd{Web / social-media data} & Not applicable in the social-media sense; the material is
 television broadcast audio obtained from public platform postings. Episodes were downloaded from publicly posted broadcast uploads with a standard command-line downloader and converted to 16\,kHz mono WAV locally. \textbf{Compliance with each platform's terms of service has not been formally verified}, which is precisely why the audio is not redistributed and every \texttt{license\_attestation} field still reads \texttt{UNVERIFIED}. \\ \hline
 \thd{Copyright / third-party data} & Source audio is third-party copyrighted broadcast content.
-\textbf{The audio is not redistributed.} The release contains derived artefacts --- transcripts,
-timings, speaker segments and annotations --- together with the episode registry (titles,
+\textbf{The audio is not redistributed.} The release contains derived artefacts (transcripts,
+timings, speaker segments and annotations) together with the episode registry (titles,
 channels, durations, SHA-256) so that a user can obtain the source independently.
 The derived annotations are released under CC BY 4.0; each episode's originating channel (RTV Business, ATN Bangla, and 11 episodes whose channel is recorded as \texttt{unknown}) is attributed in \texttt{registry.csv}. The \texttt{license\_attestation} field in every registry row currently reads
 \texttt{UNVERIFIED} and must be completed before public release. \\ \hline
 \thd{AI-generated / synthetic content} & \textbf{Disclosed.} No synthetic data were generated, but
 \textbf{all sentiment labels are AI-generated}: 100\% of the 1{,}811 turn labels and all 150
 speaker verdicts were produced by Claude Opus 5 under a human-authored rubric, in a single
-pass. Human effort went into curation rather than labelling --- rubric design, diarization repair,
-unit screening, out-of-domain exclusion and the discarding of stale blocks, all itemised with
-counts in Section~5.5 --- but \textbf{no human annotator re-labelled individual turns}, and the
+pass. Human effort went into curation rather than labelling, covering rubric design,
+diarization repair, unit screening, out-of-domain exclusion and the discarding of stale blocks,
+all itemised with counts in Section~5.5. \textbf{No human annotator re-labelled individual turns}, and the
 annotation drafts in the roll folders still record \texttt{human\_verified: false} for all 5{,}395
 prepared utterances. Transcripts are machine-generated by Whisper-medium and speaker
 segments by \texttt{pyannote}. Every score in this report is agreement with an AI judge, not with
 human truth. \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 
 %=======================================================================
 \section{Data and Code Availability}
@@ -1088,7 +1334,7 @@ human truth. \\ \hline
 \thd{Item} & \thd{Details} \\ \hline
 \endfirsthead
 \hline \thd{Item} & \thd{Details} \\ \hline \endhead
-\thd{Repository name}                   & GitHub --- {\scriptsize\texttt{mayer-doa-coder/bangla-financial-talkshow-sentiment}}; Zenodo is the intended archival host once a DOI is minted \\ \hline
+\thd{Repository name}                   & GitHub: {\scriptsize\texttt{mayer-doa-coder/bangla-financial-talkshow-sentiment}}; Zenodo is the intended archival host once a DOI is minted \\ \hline
 \thd{Dataset DOI / persistent identifier} & Not yet minted \\ \hline
 \thd{Direct dataset URL}                & {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}} \\ \hline
 \thd{Access instructions}               & Restricted to the course instructor at submission; intended to become public. Derived annotations and transcripts are released; source broadcast audio is not redistributed and is obtainable from the channel references in \texttt{registry.csv}. \\ \hline
@@ -1097,6 +1343,8 @@ human truth. \\ \hline
 \thd{Code version / commit / release}   & v1.0, build 2 (45-episode corpus); the archive is not under version control, so the release is identified by the dataset version \\ \hline
 \thd{README \& environment}             & \texttt{speaker\_sentiment/README.md} (pipeline, caveats, exact run sequence); \texttt{speaker\_sentiment/requirements.txt}; \texttt{torch} 2.12, \texttt{transformers}, \texttt{scikit-learn}, \texttt{pandas}, \texttt{matplotlib} \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 
 %=======================================================================
 \section{Student Contributions (CRediT-style)}
@@ -1111,8 +1359,8 @@ Two figures are reported per student because they answer different questions. \t
 is measured, not negotiated: it is the mean of each student's share of episodes, speaker turns and
 transcribed words in the released corpus, computed directly from \texttt{turns.jsonl} and
 \texttt{speakers.jsonl}, and it is reproducible from the files in the archive. It is uneven because
-episode availability was uneven --- some programmes published far more usable broadcasts than
-others. \textbf{Overall share} is the team's agreed division of the whole workload, which includes
+episode availability was uneven, and some programmes published far more usable broadcasts
+than others. \textbf{Overall share} is the team's agreed division of the whole workload, which includes
 the pipeline engineering, annotation-draft preparation, diarization repair, modelling, analysis
 and report writing that the data share cannot see. Students with smaller collections carried
 correspondingly more of that shared work, which is why the overall column is close to even; the
@@ -1126,7 +1374,7 @@ machine-verifiable part of the claim.
 \endfirsthead
 \hline \thd{Roll} & \thd{Student} & \thd{Data share (\%)} & \thd{Over-all (\%)} & \thd{CRediT roles and what they covered} & \thd{Evidence / files owned} \\ \hline \endhead
 2107001 & Nafiz Ahmed & 9.4 & 16.0 &
-\emph{Data curation; methodology; validation; investigation; writing --- review \& editing.}
+\emph{Data curation; methodology; validation; investigation; writing (review and editing).}
 Collection and pipeline run for roll 2107001; audio hygiene and the 16\,kHz mono preprocessing
 tier; weak-supervision and GER trial branches; co-author of the six genre-specific rubric rules
 and reviewer of the rubric's borderline cases &
@@ -1134,40 +1382,42 @@ and reviewer of the rubric's borderline cases &
 turn labels; the only bundle carrying a complete \texttt{processed/}, \texttt{weak/} and
 \texttt{ger/} tier (37 files, 714\,MB) \\ \hline
 2107004 & Tawhidul Hasan & 21.7 & 17.0 &
-\emph{Software; data curation; conceptualization; project administration; writing --- review \&
-editing.} Collection and pipeline run for roll 2107004; the corpus-build, judge-merge and
+\emph{Software; data curation; conceptualization; project administration; writing (review
+and editing).} Collection and pipeline run for roll 2107004; the corpus-build, judge-merge and
 split scripts; cross-roll consolidation of six differing folder layouts into one schema &
 \texttt{2107004/results/}: 10 episodes, 5.6\,h, 570 turns, 42{,}622 words, 29 judged units, 425
 turn labels; \texttt{CONSOLIDATION.md},\newline \texttt{aggregated/}\newline\texttt{STATUS.md}, 10 annotation drafts,
 \texttt{weak\_labels/} (84 files) \\ \hline
 2107006 & Sarwad Hasan Siddiqui & 30.1 & 17.5 &
-\emph{Conceptualization; methodology; formal analysis; writing --- original draft; project
+\emph{Conceptualization; methodology; formal analysis; writing (original draft); project
 administration; data curation.} Largest collection share; annotation rubric and the
 out-of-domain exclusion criteria; report preparation; corresponding student &
 \texttt{2107006/results/}: 14 episodes, 9.4\,h, 625 turns, 73{,}091 words, 60 judged units, 459
 turn labels; 8 \texttt{aggregated/} quality-gate files (143 files, 828\,MB) \\ \hline
 2107009 & Saif Ahmed Shejan & 9.8 & 16.0 &
-\emph{Validation; data curation; investigation; writing --- review \& editing.} Collection and
+\emph{Validation; data curation; investigation; writing (review and editing).} Collection and
 pipeline run for roll 2107009; the diarization quality audit that identified build~1's worst
 defect and the \texttt{pyannote} re-run that repaired it, turning 263 unusable fragments on
 \texttt{ep001} into 47 real speaker turns &
 \texttt{2107009/results/}: 5 episodes, 2.8\,h, 190 turns, 22{,}498 words, 15 judged units, 151
 turn labels; 15 diarization artefacts over 5 episodes (three passes per episode) \\ \hline
 2107010 & Maruf Shafiq & 10.0 & 16.0 &
-\emph{Visualization; formal analysis; data curation; writing --- original draft (results);
+\emph{Visualization; formal analysis; data curation; writing (original draft) (results);
 investigation.} Collection and pipeline run for roll 2107010; the confusion matrix, per-class
 and role/transcript-quality breakdowns; the qualitative error analysis behind Section~11 &
 \texttt{2107010/Results/}: 4 episodes, 2.7\,h, 289 turns, 20{,}131 words, 11 judged units, 205
 turn labels; 18 diarization artefacts over 4 episodes; \texttt{annotated/},
 \texttt{weak\_labels/} \\ \hline
 2107015 & Dewan Salman Rahman Zisan & 19.0 & 17.5 &
-\emph{Software; formal analysis; visualization; data curation; writing --- review \& editing.}
+\emph{Software; formal analysis; visualization; data curation; writing (review and editing).}
 Collection and pipeline run for roll 2107015; BanglaBERT fine-tuning, the aggregation-rule study
 and the hierarchical speaker model; the corpus diversity audit &
 \texttt{2107015/results/}: 8 episodes, 5.3\,h, 501 turns, 40{,}264 words, 23 judged units, 387
 turn labels; \texttt{models/}, \texttt{artifacts/}, \texttt{reports/}\newline\texttt{diversity\_audit.md} and 5
 report figures \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 
 %=======================================================================
 \section{Acknowledgements, Funding and Competing Interests}
@@ -1255,7 +1505,7 @@ GitHub: mayer-doa-coder/bangla-financial-talkshow-sentiment. DOI not yet minted.
 \emph{\small Place the full variable/field dictionary here if Section 7.2 would otherwise become
 too long.}
 
-\textbf{A.1 \texttt{turns.jsonl} --- 2{,}414 rows, 19 fields}
+\textbf{A.1 \texttt{turns.jsonl}: 2{,}414 rows, 19 fields}
 
 \begin{longtable}{|L{3.4cm}|L{2.0cm}|L{9.6cm}|}
 \hline
@@ -1280,31 +1530,33 @@ too long.}
 \texttt{flag\_too\_short}       & boolean & Turn below the minimum usable length \\ \hline
 \texttt{role}                   & string  & \texttt{host} / \texttt{guest} / \texttt{minor} / \texttt{unassigned} \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 
-\textbf{A.2 \texttt{speakers.jsonl} --- 212 rows.} Adds \texttt{speaker\_key}, \texttt{programme},
+\textbf{A.2 \texttt{speakers.jsonl}: 212 rows.} Adds \texttt{speaker\_key}, \texttt{programme},
 \texttt{n\_turns}, \texttt{n\_usable\_turns}, \texttt{n\_words}, \texttt{n\_clean\_words},
 \texttt{dur\_sec}, \texttt{mean\_words\_per\_turn}, \texttt{n\_loop\_turns},
 \texttt{mean\_asr\_confidence}, \texttt{script} (concatenated turns), \texttt{turn\_ids} and
 \texttt{judgeable}.
 
-\textbf{A.3 \texttt{judgements.jsonl} --- 150 rows.} \texttt{pass\_id}, \texttt{judge\_model},
+\textbf{A.3 \texttt{judgements.jsonl}: 150 rows.} \texttt{pass\_id}, \texttt{judge\_model},
 \texttt{speaker\_label}, \texttt{stance\_score}, \texttt{speaker\_confidence},
 \texttt{speaker\_summary}, \texttt{speaker\_rationale}, \texttt{dominant\_topics},
 \texttt{transcript\_quality}, \texttt{n\_turns\_sent}, \texttt{n\_turns\_returned},
 \texttt{turn\_labels} (list of \{\texttt{turn\_id}, \texttt{label}, \texttt{confidence},
 \texttt{evidence}\}) and \texttt{usage}.
 
-\textbf{A.4 \texttt{speakers\_labelled.jsonl} --- 150 rows.} Adds \texttt{speaker\_level\_valid},
+\textbf{A.4 \texttt{speakers\_labelled.jsonl}: 150 rows.} Adds \texttt{speaker\_level\_valid},
 per-class counts, \texttt{net\_polarity}, \texttt{net\_polarity\_word\_weighted}, the five
 aggregation outputs (\texttt{agg\_majority\_vote}, \texttt{agg\_net\_polarity},
 \texttt{agg\_word\_weighted}, \texttt{agg\_conf\_weighted}, \texttt{agg\_word\_conf\_weighted})
 and \texttt{split}.
 
-\textbf{A.5 \texttt{turns\_\{train,val,test\}.jsonl} --- 1{,}009 / 297 / 324 rows.} Turn fields plus
+\textbf{A.5 \texttt{turns\_\{train,val,test\}.jsonl}: 1{,}009 / 297 / 324 rows.} Turn fields plus
 \texttt{speaker\_key}, \texttt{label}, \texttt{judge\_confidence}, \texttt{evidence},
 \texttt{n\_passes}, \texttt{pass\_agreement}, \texttt{weight} and \texttt{split}.
 
-\textbf{A.6 \texttt{registry.csv} --- 32 rows.} \texttt{episode\_id}, \texttt{channel},
+\textbf{A.6 \texttt{registry.csv}: 32 rows.} \texttt{episode\_id}, \texttt{channel},
 \texttt{duration\_sec}, \texttt{programme}, \texttt{has\_remote\_guest},
 \texttt{covers\_market\_news}, \texttt{local\_path}, \texttt{sha256},
 \texttt{license\_attestation}, \texttt{sample\_rate}, \texttt{channels}, \texttt{codec},
@@ -1358,6 +1610,8 @@ leakage-control requirements.}}
 \thd{Documentation}  & README explains files, variables, setup and reuse; captions/tables match the repository contents. & $\boxtimes$~Yes~/~$\square$~No & \texttt{speaker\_sentiment/}\newline\texttt{README.md} \\ \hline
 \thd{Team accountability} & All six students' contributions are recorded. & $\boxtimes$~Yes~/~$\square$~No & Section 15 \\ \hline
 \end{longtable}
+% This longtable has no caption, so it must not consume a table number.
+\addtocounter{table}{-1}
 \endgroup
 
 \end{document}

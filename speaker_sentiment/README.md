@@ -7,14 +7,36 @@ sentiment corpus, labels it with an LLM judge, and fine-tunes BanglaBERT on the 
 build_speaker_corpus.py   fused/*.json  ->  turns.jsonl + speakers.jsonl
 llm_judge.py              speakers.jsonl -> judgements.jsonl        (Claude Opus 5)
 make_datasets.py          judgements     -> turns_{train,val,test}.jsonl + speakers_*
-Speaker_Sentiment_BanglaBERT.ipynb       -> fine-tuned model + speaker-level evaluation
+Speaker_Sentiment_BanglaBERT.ipynb       -> fine-tuned model + out-of-fold speaker predictions
+speaker_level_eval.py     out-of-fold preds -> Task B metrics, baselines, breakdowns
+make_speaker_figs.py      Task B metrics -> confusion matrix + system ladder figures
+make_sample_figure.py     released files -> the worked-example figure (HTML, screenshot it)
 predict_speakers.py       turns.jsonl + model -> speaker verdicts   (no notebook needed)
 ```
 
-**Status: the corpus is built and labelled.** 45 episodes → 2,414 turns → 150 speaker units judged
-→ **1,630 supervised turns** split 1,009 / 297 / 324. `data/` holds everything the notebook needs.
-**No GPU is required to train** — see §7 for timings and the exact command sequence.
-**Read §8 before putting any number in a report.**
+### Two tasks, not one
+
+The release supports two supervised tasks, and they are evaluated separately because they are
+different problems.
+
+| | Task A | Task B |
+|---|---|---|
+| Question | what does this turn express? | where does this speaker stand in the whole episode? |
+| Unit | one speaker turn | one speaker in one episode |
+| Classes | negative / neutral / positive | negative / mixed / neutral / positive, plus a stance score |
+| Size | 1,630 supervised turns | 147 speaker units |
+| Protocol | episode-disjoint 1,009 / 297 / 324 split | 5-fold `GroupKFold` over all 147 units |
+| Headline | macro-F1 **0.670** against a 0.236 floor | macro-F1 **0.530** against a 0.214 floor |
+
+**Task B is not Task A with a summing step.** Hand an oracle the judge's own gold turn labels and
+let it aggregate them perfectly: it still only recovers 85.0% of the speaker verdicts. About one
+verdict in seven is simply not present in the turn labels. That gap is why the second task exists,
+and `speaker_level_eval.py` measures it.
+
+**Status: the corpus is built and labelled.** 45 episodes -> 2,414 turns -> 150 speaker units
+judged -> **1,630 supervised turns** split 1,009 / 297 / 324. `data/` holds everything the
+notebook needs. **No GPU is required to train**; see §7 for timings and the exact command
+sequence. **Read §8 before putting any number in a report.**
 
 | | |
 |---|---|
@@ -487,6 +509,11 @@ speaker_sentiment/
   llm_judge.py               Claude Opus 5 judge: speaker verdict + per-turn labels
   make_datasets.py           merge, aggregate 5 ways, group-disjoint splits, leakage check
   predict_speakers.py        score a turns file with a trained model -> speaker verdicts (CLI)
+  tfidf_baseline.py          Task A bag-of-words control on the same split
+  speaker_level_eval.py      Task B: metrics, baseline ladder, confusion, breakdowns
+  make_speaker_figs.py       Task B figures (confusion matrix, system ladder)
+  make_sample_figure.py      worked-example figure as HTML, for screenshotting
+  check_evidence.py          measures how many judge evidence quotes are verbatim
   Speaker_Sentiment_BanglaBERT.ipynb
   data/
     turns.jsonl              2,414 speaker turns
@@ -496,4 +523,23 @@ speaker_sentiment/
     speakers_labelled.jsonl  150 units with 5 aggregation rules attached
     turns_{train,val,test}.jsonl      1,009 / 297 / 324
     speakers_{train,val,test}.jsonl      94 /  23 /  30
+  runs/
+    banglabert_turn/         Task A: metrics.json, history.csv, test_predictions.jsonl, model/
+      presentation/          Task A figures and breakdowns, plus speaker_level_oof.csv
+    tfidf_baseline/          Task A control
+    speaker_level/           Task B: metrics.json, system_comparison.csv, confusion_matrix.csv,
+                             per_class.csv, breakdown_*.csv, errors.csv, two PNG figures
+    sample/                  sample_figure.html, the worked example
 ```
+
+### Regenerating the Task B results and the report figures
+
+```bash
+python -X utf8 speaker_sentiment/speaker_level_eval.py    # ~15 s, CPU, no model needed
+python -X utf8 speaker_sentiment/make_speaker_figs.py     # two PNGs
+python -X utf8 speaker_sentiment/make_sample_figure.py    # HTML; screenshot at 2800px wide
+```
+
+`speaker_level_eval.py` reads the out-of-fold predictions the notebook saved, so it does not
+need a GPU or the checkpoint. The sample figure is HTML rather than a plot because Bengali needs
+complex-script shaping that matplotlib does not do; open it in a browser and capture it.

@@ -1,0 +1,4 @@
+role,units,accuracy,macro_f1
+guest,101,0.6436,0.3813
+host,45,0.6889,0.4634
+minor,1,0.0,0.0

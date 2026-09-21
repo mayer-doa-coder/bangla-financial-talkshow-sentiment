@@ -1,0 +1,4 @@
+transcript_quality,units,accuracy,macro_f1
+fair,142,0.662,0.5457
+good,2,0.5,0.3333
+poor,3,0.3333,0.1667

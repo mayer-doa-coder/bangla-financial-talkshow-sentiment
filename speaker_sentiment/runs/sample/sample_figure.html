@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Dataset sample</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    width: 1400px; margin: 0; padding: 26px 30px 30px;
+    background: #fff; color: #14171c;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  }
+  .bn { font-family: "Nirmala UI", "Noto Sans Bengali", sans-serif;
+         font-size: 17px; line-height: 1.85; }
+  .stage {
+    border: 1px solid; border-radius: 6px; padding: 12px 15px; margin-bottom: 11px;
+    position: relative;
+  }
+  .stage h3 {
+    margin: 0 0 7px; font-size: 13px; letter-spacing: .055em; text-transform: uppercase;
+  }
+  .stage .meta { font-size: 12.5px; color: #4a5059; margin-bottom: 6px; }
+  .num {
+    position: absolute; top: -11px; left: 13px; width: 22px; height: 22px;
+    border-radius: 50%; background: #fff; border: 1px solid #9aa1ab;
+    font-size: 12px; font-weight: 700; text-align: center; line-height: 20px;
+  }
+  table { border-collapse: collapse; font-size: 12.5px; }
+  td { padding: 2px 16px 2px 0; font-variant-numeric: tabular-nums; }
+  .chip {
+    display: inline-block; margin: 2px 5px 2px 0; padding: 3px 8px;
+    border: 1px solid #b9c2cd; border-radius: 4px; background: #fff;
+  }
+  .chip b { font-family: "Nirmala UI","Noto Sans Bengali",sans-serif; font-size: 15px; }
+  .chip i { font-style: normal; color: #6b7483; font-size: 11px; margin-left: 6px; }
+  mark { background: #FFE9A8; padding: 1px 2px; border-radius: 2px; }
+  .pill {
+    display: inline-block; padding: 1px 9px; border-radius: 10px;
+    color: #fff; font-size: 11.5px; font-weight: 700; letter-spacing: .03em;
+  }
+  .cols { display: flex; gap: 16px; }
+  .cols > div { flex: 1; }
+  ul { margin: 4px 0 0; padding-left: 17px; font-size: 12.5px; line-height: 1.75; }
+  .verdict { font-size: 21px; font-weight: 700; }
+  .note { font-size: 12px; color: #4a5059; margin-top: 7px; font-style: italic; }
+</style></head><body>
+
+<div class="stage" style="background:#DCE8F6;border-color:#3E6FA8">
+  <div class="num">1</div>
+  <h3 style="color:#3E6FA8">Broadcast audio, then diarization</h3>
+  <div class="meta">Episode <b>2107006::ep005</b> &middot; pyannote decides who holds the floor.
+    Speaker ids are local to this episode.</div>
+  <table><tr><td><b>speaker</b></td><td><b>starts</b></td><td><b>lasts</b></td></tr>
+  <tr><td>spk3</td><td>2305.48s</td><td>5.23s</td></tr><tr><td>spk0</td><td>2310.88s</td><td>17.77s</td></tr><tr><td>spk3</td><td>2328.82s</td><td>141.36s</td></tr></table>
+  <div class="note">The floor changes hands at 2328.8 s. Everything below follows the
+    speaker who starts there.</div>
+</div>
+
+<div class="stage" style="background:#DCE8F6;border-color:#3E6FA8">
+  <div class="num">2</div>
+  <h3 style="color:#3E6FA8">Speech recognition, in fixed windows</h3>
+  <div class="meta">Whisper-medium Bangla decodes the audio in windows of about 28 seconds,
+    with a timestamp on every word. Window <b>ep005_utt00100</b>,
+    2328.6&ndash;2352.0 s, speaker 3.</div>
+  <div><span class="chip"><b>একটু</b><i>2328.58s</i></span><span class="chip"><b>খেয়াল</b><i>2329.34s</i></span><span class="chip"><b>করে</b><i>2329.60s</i></span><span class="chip"><b>দেখি</b><i>2329.76s</i></span><span class="chip"><b>যে</b><i>2330.06s</i></span><span class="chip"><b>আমরা</b><i>2330.28s</i></span><span class="chip" style="border-style:dashed">&hellip;</span></div>
+  <div class="bn" style="margin-top:8px">একটু খেয়াল করে দেখি যে আমরা এখানে অনেকবার অনেক কথা বলেছি আপনার অনুষ্ঠানে অনেকবার কথা হয়েছে আপনি অনেকবার এগুলি নিয়ে আলোচনা করেছেন সেই লক্ষ্যে যেটা আমরা দেখি সেরকম কিন্তু বড় কোন পরিবর্তন হয়নি আমরা মনে করি যে এটা লম্বান এটা কিন্তু শর্টার না ওভার নাইট আপনি কিন্তু পরিবর্তন করতে পারবেন না একটালাম রয়েছে</div>
+  <div class="note">The previous window (2310.6&ndash;2328.6 s)
+    belongs to speaker 0, so a window boundary is not a speaker boundary.</div>
+</div>
+
+<div class="stage" style="background:#DDEEE1;border-color:#3C7D52">
+  <div class="num">3</div>
+  <h3 style="color:#3C7D52">One speaker turn, rebuilt</h3>
+  <div class="meta">Consecutive windows from the same speaker are merged back into a turn, and
+    fragments cut off mid-word are dropped. <b>2107006::ep005::turn0024</b> &middot;
+    2328.6&ndash;2352.0 s &middot; 53 words &middot;
+    built from 1 window(s) &middot; role: guest</div>
+  <div class="bn">একটু খেয়াল করে দেখি যে আমরা এখানে অনেকবার অনেক কথা বলেছি আপনার অনুষ্ঠানে অনেকবার কথা হয়েছে আপনি অনেকবার এগুলি নিয়ে আলোচনা করেছেন সেই লক্ষ্যে যেটা আমরা দেখি সেরকম কিন্তু <mark>বড় কোন পরিবর্তন হয়নি</mark> আমরা মনে করি যে এটা লম্বান এটা কিন্তু শর্টার না ওভার নাইট আপনি কিন্তু পরিবর্তন করতে পারবেন না একটালাম রয়েছে</div>
+</div>
+
+<div class="stage" style="background:#FBE6D4;border-color:#B5701F">
+  <div class="num">4</div>
+  <h3 style="color:#B5701F">Level one: what this turn expresses</h3>
+  <div class="meta">
+    <span class="pill" style="background:#B5432A">negative</span>
+    &nbsp;judge confidence: medium &middot; split: train
+  </div>
+  <div style="font-size:13px">Evidence the judge cited, highlighted above:
+    <span class="bn" style="font-size:16px"><mark>বড় কোন পরিবর্তন হয়নি</mark></span>
+    &nbsp;&mdash;&nbsp;<i>&ldquo;no real change has happened&rdquo;</i></div>
+</div>
+
+<div class="stage" style="background:#EAE1F2;border-color:#6E4B9E">
+  <div class="num">5</div>
+  <h3 style="color:#6E4B9E">Level two: where this speaker stands in the whole episode</h3>
+  <div class="cols">
+    <div>
+      <div class="meta"><b>2107006::ep005::S3</b> &middot; guest &middot;
+        8 turns &middot; 2,192 words</div>
+      <div class="verdict" style="color:#B5701F">
+        mixed
+        <span style="font-size:14px;color:#4a5059">
+          &nbsp;stance +0.15 on a &minus;1 to +1 scale</span>
+      </div>
+      <div class="meta" style="margin-top:5px">Turn labels for this speaker: 2 negative &middot; 3 neutral &middot; 3 positive</div>
+      <ul><li><span class="pill" style="background:#3C7D52">positive</span> turn 11, 629 words</li><li><span class="pill" style="background:#3C7D52">positive</span> turn 17, 535 words</li><li><span class="pill" style="background:#6B7483">neutral</span> turn 19, 53 words</li><li><span class="pill" style="background:#6B7483">neutral</span> turn 20, 188 words</li><li><span class="pill" style="background:#B5432A">negative</span> turn 24, 53 words</li><li><span class="pill" style="background:#B5432A">negative</span> turn 25, 287 words</li><li><span class="pill" style="background:#3C7D52">positive</span> turn 32, 114 words</li><li><span class="pill" style="background:#6B7483">neutral</span> turn 36, 333 words</li></ul>
+    </div>
+    <div>
+      <div class="meta"><b>Why the verdict is not simply the majority turn label</b></div>
+      <div style="font-size:13px;line-height:1.65">Four favourable turns about the sector&#x27;s contribution against two unfavourable ones about stalled reform and missed markets. The pride and the grievance are both genuine and about different things.</div>
+      <div class="meta" style="margin-top:8px"><b>What the speaker talked about</b></div>
+      <div style="font-size:12.5px">migrant worker numbers and wages, foreign employment as economic ballast, sector reputation, caregiver and nursing markets, skills and training investment, migration cost</div>
+    </div>
+  </div>
+</div>
+
+</body></html>
