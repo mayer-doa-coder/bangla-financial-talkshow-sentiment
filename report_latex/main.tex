@@ -143,90 +143,83 @@
 \end{center}
 
 \vspace{4pt}
-{\sffamily\bfseries What the dataset makes possible}
-\vspace{1pt}
+{\sffamily\bfseries (a) Framework illustrating the practical application of the data}
+\vspace{2pt}
 
 \begin{center}
 \begin{tikzpicture}[node distance=0mm]
-% ---------------------------------------------------------------- input
-\node[fbox=32mm, fill=cSig, draw=cSigB, minimum height=30mm] (g1)
-  {\fhd{One talk show}
-   A host and three guests argue about the economy for forty minutes.
-   \\[2pt]
-   {\footnotesize They disagree with each other.}};
-
-% ------------------------------------------------- the usual answer (top)
-\node[fbox=54mm, fill=cAsk, draw=cAskB, minimum height=13mm,
-      right=9mm of g1, yshift=9.5mm] (g2)
-  {\fhd{What ordinary sentiment tools report}
-   One label for the whole programme: \textbf{negative}.
-   Nobody can tell \emph{who} was negative.};
-
-% ------------------------------------------------ what this dataset adds
-\node[fbox=54mm, fill=cDat, draw=cDatB, minimum height=22mm,
-      right=9mm of g1, yshift=-13mm] (g3)
-  {\fhd{What this dataset reports}
-   A separate verdict for each person:
-   \\[2.5pt]
-   {\footnotesize\setstretch{1.15}
-   Host \,\textbullet\, \textbf{neutral} \\
-   Economist \,\textbullet\, \textbf{negative} \\
-   Banker \,\textbullet\, \textbf{positive} \\
-   Member of parliament \,\textbullet\, \textbf{mixed}}};
-
-% ---------------------------------------------------------------- output
-\node[fbox=36mm, fill=cOut, draw=cOutB, minimum height=30mm,
-      right=9mm of g3.east, anchor=west, yshift=13mm] (g4)
-  {\fhd{Questions you can now answer}
-   {\footnotesize\setstretch{1.15}
-   Which experts are worried? \\[2pt]
-   Is the banking sector more
-   optimistic than economists? \\[2pt]
-   Is that changing month by month?}};
-
-\draw[farr] (g1.east) -- ++(4.5mm,0) |- (g2.west);
-\draw[farr] (g1.east) -- ++(4.5mm,0) |- (g3.west);
-\draw[farr] (g3.east) -- (g4.west);
-
-\foreach \n/\k in {g1/1, g2/2, g3/3, g4/4}
-  \node[fnum] at ($(\n.north west)+(1.6mm,-1.6mm)$) {\k};
-\node[bandlbl, below=1.2mm of g1] {WHAT GOES IN};
-\node[bandlbl, below=1.2mm of g3] {WHAT COMES OUT};
+\def\aw{27mm}
+\node[fbox=\aw, fill=cAsk, draw=cAskB, minimum height=23mm] (a1)
+  {\fhd{Domain problem / stakeholder need}
+   Which panellist holds which position on the economy?};
+\node[fbox=\aw, fill=cSig, draw=cSigB, minimum height=23mm, right=6mm of a1] (a2)
+  {\fhd{Data acquisition / source}
+   Bangla financial television talk shows, as broadcast audio};
+\node[fbox=\aw, fill=cDat, draw=cDatB, minimum height=23mm, right=6mm of a2] (a3)
+  {\fhd{Curated \& documented dataset}
+   Speaker turns, and one verdict per speaker per episode};
+\node[fbox=\aw, fill=cMod, draw=cModB, minimum height=23mm, right=6mm of a3] (a4)
+  {\fhd{ML / analytics use}
+   Turn sentiment, and the speaker's position across an episode};
+\node[fbox=\aw, fill=cOut, draw=cOutB, minimum height=23mm, right=6mm of a4] (a5)
+  {\fhd{Decision, service or practical impact}
+   Who is negative on the economy, and whether that is changing};
+\foreach \i/\j in {a1/a2, a2/a3, a3/a4, a4/a5} \draw[farr] (\i) -- (\j);
+\node[bandlbl, below=1.2mm of a1] {NEED};
+\node[bandlbl, below=1.2mm of a3] {ARTEFACT};
+\node[bandlbl, below=1.2mm of a5] {USE};
 \end{tikzpicture}
 \end{center}
 
-{\sffamily\small\setstretch{1.0}\textbf{Figure 1.} The idea in one picture. Existing Bangla
-sentiment resources label a document or a sentence, so a programme in which four people disagree
-collapses into a single score. This dataset keeps the speakers apart and gives each one a verdict
-for the episode, which is what makes it possible to ask who holds which position rather than only
-how the programme sounded overall.\par}
+{\sffamily\small\setstretch{1.0}\textbf{Figure 1(a).} Practical application framework. The
+intended users are financial-media monitors, macroeconomic policy analysts and Bangla NLP
+researchers. The practical outcome is a stance signal resolved to the individual speaker, which
+a document-level sentiment label cannot produce because a panel programme contains people who
+disagree with each other.\par}
 
-\vspace{10pt}
-{\sffamily\bfseries The dataset at a glance}
-\vspace{3pt}
+\vspace{8pt}
+
+{\sffamily\bfseries (b) Technical pipeline of the ML method using the dataset}
+\vspace{2pt}
 
 \begin{center}
 \begin{tikzpicture}[node distance=0mm]
-\def\gw{22.5mm}
-\node[fbox=\gw, fill=cSig, draw=cSigB, minimum height=16mm] (n1)
-  {\fhd{45 episodes} 28.6 hours of broadcast audio from 3 channels};
-\node[fbox=\gw, fill=cSig, draw=cSigB, minimum height=16mm, right=4mm of n1] (n2)
-  {\fhd{2{,}414 turns} 219{,}000 words, each tied to one speaker};
-\node[fbox=\gw, fill=cDat, draw=cDatB, minimum height=16mm, right=4mm of n2] (n3)
-  {\fhd{1{,}630 labels} turn sentiment, the first task};
-\node[fbox=\gw, fill=cDat, draw=cDatB, minimum height=16mm, right=4mm of n3] (n4)
-  {\fhd{147 verdicts} one per speaker per episode, the second task};
-\node[fbox=\gw, fill=cMod, draw=cModB, minimum height=16mm, right=4mm of n4] (n5)
-  {\fhd{Two baselines} macro-F1 $0.670$ on turns, $0.530$ on speakers};
-\node[fbox=\gw, fill=cOut, draw=cOutB, minimum height=16mm, right=4mm of n5] (n6)
-  {\fhd{Open} CC BY 4.0 annotations; code and splits released};
+\def\pw{33mm}
+% ---- row 1: from recordings to a leakage-safe split
+\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=17mm] (p1)
+  {\fhd{Raw data} Broadcast audio and its episode registry};
+\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=17mm, right=7mm of p1] (p2)
+  {\fhd{Quality checks} Duplicate, duration and audio hygiene screening};
+\node[fbox=\pw, fill=cSig, draw=cSigB, minimum height=17mm, right=7mm of p2] (p3)
+  {\fhd{Preprocessing} Who spoke when, speech to text, then words joined into
+   speaker turns};
+\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=17mm, right=7mm of p3] (p4)
+  {\fhd{Train / validation / test split} Grouped by episode, so no episode
+   falls on two sides};
+% ---- row 2: from representation to a read-out
+\node[fbox=\pw, fill=cDat, draw=cDatB, minimum height=17mm, below=19mm of p1] (p5)
+  {\fhd{Features / representation} Speaker role with turn text, and the
+   speaker's full script};
+\node[fbox=\pw, fill=cMod, draw=cModB, minimum height=17mm, right=7mm of p5] (p6)
+  {\fhd{ML model(s)} A pretrained Bangla encoder, fine-tuned, with pooling for
+   the speaker level};
+\node[fbox=\pw, fill=cMod, draw=cModB, minimum height=17mm, right=7mm of p6] (p7)
+  {\fhd{Evaluation metrics} Macro-F1 and per-class scores, read against
+   baselines};
+\node[fbox=\pw, fill=cOut, draw=cOutB, minimum height=17mm, right=7mm of p7] (p8)
+  {\fhd{Interpretation / application} A stance read-out per speaker, with its
+   limits stated};
+\foreach \i/\j in {p1/p2, p2/p3, p3/p4, p5/p6, p6/p7, p7/p8} \draw[farr] (\i) -- (\j);
+% the second row continues from the end of the first
+\draw[farr] (p4.south) -- ++(0,-9.5mm) -| (p5.north);
 \end{tikzpicture}
 \end{center}
 
-{\sffamily\small\setstretch{1.0}Every label in this release was written by a language model
-following a rubric the team wrote, and then checked for internal consistency; no human annotator
-re-labelled individual turns. Scores therefore measure agreement with that judge rather than with
-human ground truth, and the report says so wherever a number appears.\par}
+{\sffamily\small\setstretch{1.0}\textbf{Figure 1(b).} Technical pipeline followed in the course
+project, shown at stage level. Splitting is grouped by episode rather than by row, so turns from
+one panel cannot fall on both sides of the split, and the duplicate episode is removed before
+partitioning. Section 6 gives the same pipeline with the models, settings and counts actually
+used.\par}
 
 
 
@@ -370,7 +363,7 @@ watch them.
 The gap is twofold. First, Bangla sentiment resources (BLP shared tasks, BanglaBERT's BLUB
 benchmark, BAN-ABSA and BABSA) are built from written social-media or review text; none covers
 broadcast financial speech. Second, and more fundamentally, almost all conversational sentiment
-resources label \emph{utterances} or \emph{documents}, not \emph{speakers}. As Figure~1 shows,
+resources label \emph{utterances} or \emph{documents}, not \emph{speakers}. As Figure~1(a) shows,
 the practical output required by the stakeholders (media monitors, policy analysts and
 researchers) is a statement of the form ``this economist is negative on the banking sector,''
 which a document-level label cannot express.
@@ -436,10 +429,10 @@ before it.
 \end{tikzpicture}
 \end{center}
 
-{\sffamily\small\setstretch{1.0}\textbf{Figure 2.} Technical pipeline followed in the course
-project. Splitting is grouped by episode, never by row, so that turns from one panel cannot
-appear on both sides of the split; the deduplicated episode is removed before partitioning. All
-45 episodes carry trusted \texttt{pyannote} diarization in this build.\par}
+{\sffamily\small\setstretch{1.0}\textbf{Figure 2.} The same pipeline as Figure~1(b), now with the models, settings and
+counts actually used. Splitting is grouped by episode, never by row, so that turns from one
+panel cannot appear on both sides of the split; the deduplicated episode is removed before
+partitioning. All 45 episodes carry trusted \texttt{pyannote} diarization in this build.\par}
 
 \vspace{4pt}
 
@@ -810,7 +803,7 @@ Every number in Section 10 is therefore bounded by an unmeasured word error rate
 citation in tabular form.}
 
 \vspace{2pt}
-Four properties decide whether a resource can answer the question in Figure~1. It has to be
+Four properties decide whether a resource can answer the question in Figure~1(a). It has to be
 \textbf{Bangla}; it has to be \textbf{spoken} material rather than writing; it has to keep
 \textbf{who said what} instead of pooling a conversation into one text; and it has to carry a
 \textbf{verdict on the person}, not only on each sentence. The table below scores the nearest resources
