@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from search_core import AUDIO_SUFFIXES, CorpusIndex, format_timestamp
+from sentiment_layer import SentimentLayer
 
 
 def _json(path: Path) -> Any:
@@ -40,8 +41,12 @@ def _best_json(directory: Path, stem: str) -> tuple[Path | None, Any]:
 
 
 class ProjectShowcase:
-    def __init__(self, index: CorpusIndex):
+    def __init__(self, index: CorpusIndex, sentiment: SentimentLayer | None = None):
         self.index = index
+        # The sentiment corpus is a separate artifact tree; when it is present
+        # stages 5 and 6 report the finished speaker-sentiment work instead of
+        # the superseded weak-label experiment.
+        self.sentiment = sentiment if sentiment is not None else SentimentLayer(index.data_root)
 
     @lru_cache(maxsize=1)
     def stage_rows(self) -> list[dict[str, Any]]:
@@ -214,6 +219,45 @@ class ProjectShowcase:
             )
         return rows
 
+    def _sentiment_stage_row(
+        self, legacy_labels: int, profile_rows: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        layer = self.sentiment
+        if not layer.available:
+            return {
+                "Stage": "5 · Speaker sentiment",
+                "State": f"{legacy_labels:,} current labels",
+                "Evidence": f"{len(profile_rows):,} exploratory profile rows",
+                "Interpretation": "Not final without aligned verified labels",
+            }
+        coverage = layer.coverage(self.index.episodes.keys())
+        return {
+            "Stage": "5 · Speaker sentiment",
+            "State": f"{coverage['turn_labels']:,} turn labels, "
+                     f"{coverage['speaker_units']:,} speaker verdicts",
+            "Evidence": f"{coverage['episodes_with_labels']}/{coverage['episodes_indexed']} "
+                        "episodes judged under a fixed rubric",
+            "Interpretation": layer.label_source(),
+        }
+
+    def _aggregation_stage_row(self, profile_rows: list[dict[str, Any]]) -> dict[str, Any]:
+        layer = self.sentiment
+        if not layer.available:
+            return {
+                "Stage": "6 · Aggregation",
+                "State": "Exploratory" if profile_rows else "Unavailable",
+                "Evidence": "per-speaker/target profile snapshots",
+                "Interpretation": "Weak-labelled snapshots kept separate",
+            }
+        rule = layer.metrics.get("best_aggregation_rule", "n/a")
+        selected_on = layer.metrics.get("aggregation_rule_selected_on", "n/a")
+        return {
+            "Stage": "6 · Aggregation",
+            "State": f"turn → speaker via {rule}",
+            "Evidence": f"rule selected on {selected_on}",
+            "Interpretation": "Speaker verdict rebuilt from its own turn labels",
+        }
+
     @lru_cache(maxsize=1)
     def stage_summary_rows(self) -> list[dict[str, Any]]:
         episodes = len(self.index.episodes)
@@ -239,8 +283,8 @@ class ProjectShowcase:
             {"Stage": "2 · Long-form Bangla ASR", "State": f"{complete('ASR')}/{episodes} ready", "Evidence": "timestamped segments and words", "Interpretation": "Automatic transcripts"},
             {"Stage": "3 · Timestamp fusion", "State": f"{complete('Fusion')}/{episodes} ready", "Evidence": "speaker-attributed words/utterances", "Interpretation": "Completed searchable evidence"},
             {"Stage": "4 · Annotation drafts", "State": f"{drafts:,} rows", "Evidence": "review-ready draft JSON", "Interpretation": f"{verified:,} human verified"},
-            {"Stage": "5 · Target/sentiment", "State": f"{labels:,} current labels", "Evidence": f"{len(profile_rows):,} exploratory profile rows", "Interpretation": "Not final without aligned verified labels"},
-            {"Stage": "6 · Aggregation", "State": "Exploratory" if profile_rows else "Unavailable", "Evidence": "per-speaker/target profile snapshots", "Interpretation": "Weak-labelled snapshots kept separate"},
+            self._sentiment_stage_row(labels, profile_rows),
+            self._aggregation_stage_row(profile_rows),
             {"Stage": "7 · Evaluation", "State": f"{len(gate_rows):,} gates recorded", "Evidence": "PASS/FAIL/SKIPPED gate table", "Interpretation": "Gold-dependent metrics remain unavailable"},
             {"Stage": "8 · Error propagation", "State": f"{error_episodes} evaluated episodes", "Evidence": f"{error_files} result file(s)", "Interpretation": "Requires gold transcripts, RTTM and labels"},
             {"Stage": "9 · Retrieval demo", "State": "Ready", "Evidence": "exact/fuzzy/semantic search + audio", "Interpretation": "Interactive project output"},

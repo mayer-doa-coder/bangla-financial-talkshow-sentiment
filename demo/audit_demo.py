@@ -11,6 +11,20 @@ from search_core import CorpusIndex
 from showcase_core import ProjectShowcase
 
 
+KNOWN_GAPS_PATH = Path(__file__).with_name("known_gaps.json")
+
+
+def load_known_gaps() -> dict[str, str]:
+    """Episodes whose source audio is absent for a reason already on record."""
+
+    try:
+        payload = json.loads(KNOWN_GAPS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    gaps = payload.get("missing_source_audio") or {}
+    return {str(key): str(value) for key, value in gaps.items()}
+
+
 def audit(index: CorpusIndex, expected_episodes: int | None, minimum_assignment: float) -> dict:
     summary = index.corpus_summary()
     showcase = ProjectShowcase(index)
@@ -24,6 +38,17 @@ def audit(index: CorpusIndex, expected_episodes: int | None, minimum_assignment:
                 "status": "PASS" if passed else "FAIL",
                 "value": value,
                 "requirement": requirement,
+            }
+        )
+
+    def add_gap(name: str, value: object, requirement: str, detail: object) -> None:
+        checks.append(
+            {
+                "check": name,
+                "status": "GAP",
+                "value": value,
+                "requirement": requirement,
+                "detail": detail,
             }
         )
 
@@ -46,12 +71,31 @@ def audit(index: CorpusIndex, expected_episodes: int | None, minimum_assignment:
         round(summary["assignment_rate"], 6),
         f">= {minimum_assignment:.1%}",
     )
-    add(
-        "audio_availability",
-        summary["audio_available"] == summary["episodes"],
-        f"{summary['audio_available']}/{summary['episodes']}",
-        "audio available for every episode",
+    known_gaps = load_known_gaps()
+    missing_audio = sorted(
+        episode.global_episode_id
+        for episode in index.episodes.values()
+        if not episode.audio_path
     )
+    undocumented_audio = [key for key in missing_audio if key not in known_gaps]
+    if missing_audio and not undocumented_audio:
+        # Every absence is one the project has already accounted for. Failing
+        # here would train the reader to ignore the audit; a GAP keeps the
+        # shortfall visible while a genuinely new one still fails.
+        add_gap(
+            "audio_availability",
+            f"{summary['audio_available']}/{summary['episodes']}",
+            "audio for every episode, or a recorded reason in known_gaps.json",
+            {key: known_gaps[key] for key in missing_audio},
+        )
+    else:
+        add(
+            "audio_availability",
+            not undocumented_audio,
+            f"{summary['audio_available']}/{summary['episodes']}"
+            + (f"; undocumented: {', '.join(undocumented_audio)}" if undocumented_audio else ""),
+            "audio for every episode, or a recorded reason in known_gaps.json",
+        )
     add(
         "diarization_outputs",
         all(row["Diarization"] == "Ready" for row in stage_rows),
@@ -92,7 +136,7 @@ def audit(index: CorpusIndex, expected_episodes: int | None, minimum_assignment:
         "provider recorded for every episode",
     )
     return {
-        "ready": all(item["status"] == "PASS" for item in checks),
+        "ready": all(item["status"] != "FAIL" for item in checks),
         "summary": summary,
         "contributors": index.contributor_rows(),
         "checks": checks,

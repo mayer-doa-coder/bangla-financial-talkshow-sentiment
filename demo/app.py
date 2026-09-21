@@ -14,6 +14,7 @@ import csv
 import html
 import json
 import os
+import socket
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -413,6 +414,7 @@ def _profile_plot(showcase: ProjectShowcase):
 def build_app(index: CorpusIndex, semantic_cache_dir: Path) -> gr.Blocks:
     summary = index.corpus_summary()
     showcase = ProjectShowcase(index)
+    sentiment = showcase.sentiment
     episode_choices = index.global_episodes
     collection_choices = [ALL_COLLECTIONS, *index.collections]
     speaker_choices: list[Any] = [ALL_SPEAKERS, *[str(value) for value in index.speaker_ids]]
@@ -716,6 +718,84 @@ def build_app(index: CorpusIndex, semantic_cache_dir: Path) -> gr.Blocks:
                 gr.Plot(_profile_plot(showcase), label="Weak-labelled profile visualisation")
                 gr.Dataframe(pd.DataFrame(showcase.profile_rows()), interactive=False, wrap=True, label="Exploratory discourse-profile snapshot")
 
+            with gr.Tab("Speaker sentiment", id="sentiment"):
+                if not sentiment.available:
+                    gr.Markdown(
+                        """
+                        ## Speaker sentiment
+
+                        The speaker-sentiment corpus was not found next to this data root, so only
+                        the pipeline evidence above is available. Point `--data-root` at the folder
+                        that contains both the roll directories and `speaker_sentiment/`.
+                        """
+                    )
+                else:
+                    _coverage = sentiment.coverage(index.episodes.keys())
+                    gr.Markdown(
+                        f"""
+                        ## Who holds which position, and what a model learns from it
+
+                        Every speaker in **{_coverage['episodes_with_labels']} of
+                        {_coverage['episodes_indexed']}** indexed episodes carries a verdict
+                        (negative / mixed / neutral / positive) with a stance score, built from
+                        **{_coverage['turn_labels']:,} labelled turns** across
+                        **{_coverage['speaker_units']} speaker units**.
+
+                        **Read this honestly.** {sentiment.caveat()} The label source is
+                        *{sentiment.label_source()}*. A speaker verdict is a statement about the
+                        automatic transcript of an episode-local predicted speaker, never a claim
+                        about a named person.
+                        """
+                    )
+                    gr.Dataframe(
+                        pd.DataFrame(sentiment.speaker_rows()),
+                        interactive=False,
+                        wrap=True,
+                        label="Speaker verdicts",
+                    )
+                    if sentiment.has_model_run:
+                        gr.Markdown("### BanglaBERT turn classifier, held-out test split")
+                        with gr.Row():
+                            with gr.Column(scale=5):
+                                gr.Dataframe(
+                                    pd.DataFrame(sentiment.model_rows()),
+                                    interactive=False,
+                                    wrap=True,
+                                    label="Headline scores",
+                                )
+                                gr.Dataframe(
+                                    pd.DataFrame(sentiment.per_class_rows()),
+                                    interactive=False,
+                                    wrap=True,
+                                    label="Per-class scores",
+                                )
+                            with gr.Column(scale=5):
+                                gr.Dataframe(
+                                    pd.DataFrame(sentiment.confusion_rows()),
+                                    interactive=False,
+                                    wrap=True,
+                                    label="Confusion matrix (counts)",
+                                )
+                                gr.Dataframe(
+                                    pd.DataFrame(sentiment.training_rows()),
+                                    interactive=False,
+                                    wrap=True,
+                                    label="Training history per epoch",
+                                )
+                        with gr.Accordion("Prediction examples", open=False):
+                            gr.Dataframe(
+                                pd.DataFrame(sentiment.example_rows(correct=True)),
+                                interactive=False,
+                                wrap=True,
+                                label="Confident agreements with the judge",
+                            )
+                            gr.Dataframe(
+                                pd.DataFrame(sentiment.example_rows(correct=False)),
+                                interactive=False,
+                                wrap=True,
+                                label="Confident disagreements with the judge",
+                            )
+
             with gr.Tab("Evaluation & downloads", id="evaluation"):
                 gr.Markdown(
                     """
@@ -737,10 +817,14 @@ def build_app(index: CorpusIndex, semantic_cache_dir: Path) -> gr.Blocks:
 
                             - **WER:** needs a human-corrected transcript.
                             - **DER:** needs a human speaker-turn RTTM reference.
-                            - **Sentiment macro-F1:** needs verified target/polarity labels.
+                            - **Target/polarity macro-F1:** the five-target task above is still unlabelled.
                             - **Error propagation:** needs the paired gold and automatic streams above.
 
                             Retrieval, timestamps and audio evidence remain demonstrable without inventing these values.
+
+                            The separate **speaker-sentiment** task *is* scored — see its tab — but
+                            against an LLM judge rather than human ground truth, so it does not
+                            settle any of the four items above.
                             """
                         )
                 gr.Dataframe(pd.DataFrame(showcase.gate_rows()), interactive=False, wrap=True, label="Submission and evaluation gates")
@@ -857,6 +941,37 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _usable_port(server_name: str, requested: int) -> int:
+    """Return a port that can actually be bound on this machine.
+
+    Windows reserves blocks of TCP ports for Hyper-V/WSL, and on some machines
+    one of those blocks covers Gradio's default 7860. Binding then fails with
+    WinError 10013 and Gradio reports "cannot find empty port", which reads
+    like something else is using it. Rather than make the presenter hunt for a
+    free port minutes before a demo, fall back to one the OS hands out.
+    """
+
+    host = "127.0.0.1" if server_name in ("", "0.0.0.0", None) else server_name
+    for candidate in (requested, 0):
+        probe = socket.socket()
+        try:
+            probe.bind((host, candidate))
+            chosen = probe.getsockname()[1]
+        except OSError:
+            continue
+        finally:
+            probe.close()
+        if candidate and chosen != requested:
+            continue
+        if chosen != requested:
+            print(
+                f"Port {requested} cannot be bound on this machine "
+                f"(reserved or in use); using {chosen} instead."
+            )
+        return chosen
+    return requested
+
+
 def main() -> None:
     args = parse_args()
     data_root = Path(args.data_root).expanduser().resolve()
@@ -882,7 +997,7 @@ def main() -> None:
         css=CSS,
         js=FORCE_LIGHT_JS,
         server_name=args.server_name,
-        server_port=args.server_port,
+        server_port=_usable_port(args.server_name, args.server_port),
         share=args.share,
         debug=args.debug,
         show_error=True,

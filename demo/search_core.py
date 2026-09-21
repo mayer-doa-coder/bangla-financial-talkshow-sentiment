@@ -250,16 +250,66 @@ def _normalized_filename(name: str) -> str:
     return unicodedata.normalize("NFC", str(name)).casefold()
 
 
+def _ffmpeg_exe() -> str | None:
+    """Path to an ffmpeg binary, preferring PATH then the bundled wheel.
+
+    ``imageio-ffmpeg`` is a declared dependency and installs its binary
+    outside PATH, so a PATH-only lookup reports "no ffmpeg" on a machine
+    that has a perfectly usable one.
+    """
+
+    ffmpeg = shutil.which("ffmpeg")
+    if ffmpeg:
+        return ffmpeg
+    try:
+        import imageio_ffmpeg
+
+        candidate = imageio_ffmpeg.get_ffmpeg_exe()
+    except (ImportError, RuntimeError, OSError):
+        return None
+    return candidate if candidate and Path(candidate).is_file() else None
+
+
 def _ffprobe() -> str | None:
     probe = shutil.which("ffprobe")
     if probe:
         return probe
-    ffmpeg = shutil.which("ffmpeg")
+    # ffprobe normally sits beside ffmpeg. The imageio-ffmpeg wheel is the
+    # exception: it ships ffmpeg alone, which _duration_via_ffmpeg handles.
+    ffmpeg = _ffmpeg_exe()
     if ffmpeg:
         candidate = Path(ffmpeg).with_name("ffprobe" + Path(ffmpeg).suffix)
         if candidate.is_file():
             return str(candidate)
     return None
+
+
+_FFMPEG_DURATION_RE = re.compile(r"Duration:\s*(\d+):(\d{2}):(\d{2}(?:\.\d+)?)")
+
+
+def _duration_via_ffmpeg(path: Path) -> float | None:
+    """Read a media duration from ``ffmpeg -i`` when ffprobe is unavailable.
+
+    ffmpeg writes the container header to stderr and exits non-zero because
+    no output file was given; the banner is still the information we want.
+    """
+
+    ffmpeg = _ffmpeg_exe()
+    if not ffmpeg:
+        return None
+    completed = subprocess.run(
+        [ffmpeg, "-hide_banner", "-i", str(path)],
+        capture_output=True,
+        text=True,
+        errors="replace",
+        check=False,
+    )
+    match = _FFMPEG_DURATION_RE.search(completed.stderr or "")
+    if not match:
+        return None
+    hours, minutes, seconds = match.groups()
+    total = int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+    return total if total > 0 else None
 
 
 _DURATION_CACHE: dict[tuple[str, int, int], float | None] = {}
@@ -296,6 +346,8 @@ def probe_duration(path: Path) -> float | None:
         if completed.returncode == 0:
             value = _safe_float(completed.stdout.strip(), -1.0)
             duration = value if value > 0 else None
+    if duration is None:
+        duration = _duration_via_ffmpeg(path)
     _DURATION_CACHE[key] = duration
     return duration
 
@@ -308,7 +360,9 @@ def _audio_files_under(root: Path) -> list[Path]:
     )
 
 
-def _match_by_duration(root: Path, duration_sec: float) -> Path | None:
+def _match_by_duration(
+    root: Path, duration_sec: float, *, exclude: set[Path] | None = None
+) -> Path | None:
     """Find the recording whose real duration matches the registry entry.
 
     Members sometimes re-encode or renumber their audio before uploading, so
@@ -320,7 +374,10 @@ def _match_by_duration(root: Path, duration_sec: float) -> Path | None:
     if duration_sec <= 0:
         return None
     best: tuple[float, Path] | None = None
+    taken = exclude or set()
     for path in _audio_files_under(root):
+        if path.resolve() in taken:
+            continue
         probed = probe_duration(path)
         if probed is None:
             continue
@@ -337,7 +394,17 @@ def _resolve_audio_path(
     data_root: Path,
     episode_id: str,
     duration_sec: float = 0.0,
+    claimed: set[Path] | None = None,
 ) -> Path | None:
+    """Locate the recording an episode was transcribed from.
+
+    ``claimed`` collects the files already handed to earlier episodes of the
+    same bundle. Only the inexact strategies below consult it: two episodes of
+    one programme can share a runtime to the centisecond, and without this a
+    duration match would hand the second episode the first one's audio, so the
+    demo would play one episode while displaying another's transcript.
+    """
+
     source = Path(str(local_path or ""))
     basename = source.name
     contributor_root = _contributor_root(bundle_root, data_root)
@@ -387,18 +454,19 @@ def _resolve_audio_path(
     # The roll's own folder is searched first so a roll always prefers its own
     # copy; the whole corpus is only searched afterwards, because members share
     # recordings and some registries point at a file another roll uploaded.
+    taken = claimed if claimed is not None else set()
     wanted = _normalized_filename(basename) if basename else ""
     for root in (contributor_root, data_root):
         if not wanted:
             break
         for path in _audio_files_under(root):
-            if _normalized_filename(path.name) == wanted:
+            if _normalized_filename(path.name) == wanted and path.resolve() not in taken:
                 return path.resolve()
 
     # The filename is gone (renamed or re-encoded on upload). Identify the
     # recording by its duration instead.
     for root in (contributor_root, data_root):
-        matched = _match_by_duration(root, duration_sec)
+        matched = _match_by_duration(root, duration_sec, exclude=taken)
         if matched is not None:
             return matched
 
@@ -420,7 +488,7 @@ def _resolve_audio_path(
                     data_root / f"{number}{suffix}",
                 ]
             )
-        guess = first_existing(numbered)
+        guess = first_existing([path for path in numbered if path.resolve() not in taken])
         if guess is not None:
             probed = probe_duration(guess) if duration_sec > 0 else None
             if probed is None or abs(probed - duration_sec) <= DURATION_TOLERANCE_SEC:
@@ -562,6 +630,7 @@ class CorpusIndex:
             registry = {row.get("episode_id", ""): row for row in registry_rows}
             labels = _label_lookup(bundle_root)
             fused_dir = resolve_stage_dir(bundle_root, "fused")
+            claimed_audio: set[Path] = set()
 
             for fused_path in sorted(fused_dir.glob("*.json")):
                 try:
@@ -578,8 +647,11 @@ class CorpusIndex:
                     data_root=self.data_root,
                     episode_id=episode_id,
                     duration_sec=_safe_float(meta.get("duration_sec")),
+                    claimed=claimed_audio,
                 )
-                if not audio:
+                if audio:
+                    claimed_audio.add(audio)
+                else:
                     self.warnings.append(f"Audio not found for {global_episode}; transcript search still works.")
 
                 utterances = list(fused.get("utterances", []))
@@ -992,14 +1064,7 @@ class CorpusIndex:
         record = self.record_by_key(key)
         if record is None or not record.audio_path:
             return None
-        ffmpeg = shutil.which("ffmpeg")
-        if not ffmpeg:
-            try:
-                import imageio_ffmpeg
-
-                ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
-            except (ImportError, RuntimeError):
-                ffmpeg = None
+        ffmpeg = _ffmpeg_exe()
         if not ffmpeg:
             return None
         target_dir = Path(output_dir or tempfile.gettempdir()) / "bangla_financial_search_clips"

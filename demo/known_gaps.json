@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Episodes whose source audio is absent from the shared folder for a known, recorded reason. The readiness audit reports these as GAP instead of FAIL so that a genuine new regression is still visible. Transcripts, diarization, fusion and annotation drafts for these episodes are complete and searchable; only audio playback is unavailable.",
+  "missing_source_audio": {
+    "2107006::ep010": "registry points at 15.mp3, which was never uploaded to the shared folder",
+    "2107006::ep011": "registry points at 16.mp3, which was never uploaded to the shared folder",
+    "2107006::ep012": "registry points at 17.mp3, which was never uploaded to the shared folder",
+    "2107006::ep013": "registry points at 18.mp3, which was never uploaded to the shared folder",
+    "2107006::ep014": "registry points at 19.mp3, which was never uploaded to the shared folder; its runtime coincides with ep006 to the centisecond, so audio must not be matched by duration here",
+    "2107010::ep006": "processed in a later pipeline run; no registry row and the source recording was not retained"
+  }
+}

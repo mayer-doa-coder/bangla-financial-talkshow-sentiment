@@ -2,13 +2,23 @@
 
 ## Before the meeting
 
-1. Put each member's audio and result bundle below
-   `datasets/<roll>/<roll>_results/` using the layout in `README.md`.
+1. Each member's audio and result bundle sits under their roll folder. Point
+   `--data-root` at the folder holding those roll folders (the repository root
+   in this checkout); the loader accepts the layout variations the members
+   actually used.
 2. Episode IDs may repeat across rolls because the demo uses
    `<roll>::<episode>` as the unique key. Never reinterpret an episode-local
    speaker ID as the same person in another episode.
-3. Run the readiness audit and keep its JSON beside the consolidated data.
+3. Run the readiness audit and keep its JSON beside the consolidated data:
+   `python demo/audit_demo.py --data-root . --report demo_readiness.json`.
+   Expect `ready: true` with one **GAP** on `audio_availability` -- six
+   episodes whose source recording was never uploaded, each listed with its
+   reason in `demo/known_gaps.json`. Their transcripts still search normally;
+   only playback is unavailable, so pick a playback example from another
+   episode.
 4. Launch the app once, prepare semantic search, and try every query below.
+   Read the local URL the app prints: 7860 is inside a Windows reserved port
+   range on some machines, and the app then moves to a free port and says so.
 5. Keep a local browser tab open even if you also use a temporary share link.
 
 ## Eight-minute live sequence
@@ -32,9 +42,15 @@
 8. **Meaning-based retrieval:** search `রেমিট্যান্স কেন কমছে?` with
    **Concept / question + Hybrid**.
 9. **Evidence playback:** select one result and play its audio excerpt.
-10. **Evaluation status:** show the complete gate table. Explicitly distinguish
+10. **Speaker sentiment:** open the Speaker sentiment tab. Show the per-speaker
+    verdict table, then the model's held-out scores: macro-F1 0.670 against a
+    0.236 majority-class floor and a 0.529 TF-IDF control, with the confusion
+    matrix and per-class table beside it. Say plainly that the labels come
+    from an LLM judge under a fixed rubric, so these are agreement figures,
+    not agreement with human truth.
+11. **Evaluation status:** show the complete gate table. Explicitly distinguish
     missing gold-dependent metrics from completed automatic processing.
-11. **Reproducible output:** download the search CSV and project-evidence ZIP.
+12. **Reproducible output:** download the search CSV and project-evidence ZIP.
 
 ## Suggested explanation
 
@@ -50,7 +66,10 @@ audio, so every claim is inspectable.”
 
 - Do not call the speaker ID a person's name or link it across episodes.
 - Do not call retrieval relevance “accuracy.”
-- Do not claim measured WER, DER, or sentiment F1 when gold annotations are
-  unavailable.
+- Do not claim measured WER, DER, or target/polarity F1: those still have no
+  gold reference.
+- Do quote the speaker-sentiment macro-F1, but always with what it is measured
+  against -- an LLM judge, not human annotation. No human has re-labelled an
+  individual turn; every annotation draft still reads `human_verified: false`.
 - Do not say the output is guaranteed correct. Present it as automatic,
   traceable evidence ready for targeted review.

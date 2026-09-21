@@ -41,6 +41,12 @@
 \usepackage{titlesec}
 \usepackage[hidelinks,breaklinks]{hyperref}
 \usepackage{url}
+% Allow the repository URL to wrap inside narrow table columns.
+\def\UrlBreaks{\do\/\do\-\do\.\do\_\do\a\do\b\do\c\do\d\do\e\do\f%
+  \do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q%
+  \do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z}
+\Urlmuskip=0mu plus 1mu
+
 
 %------------------------------------------------ [BANGLA] XeLaTeX only
 % \usepackage{polyglossia}
@@ -299,7 +305,7 @@ and annotator agreement remain unmeasured and are documented as such.
 \thd{Instrument / software}     & \texttt{pyannote/speaker-diarization-community-1} (rev \texttt{3533c8cf}) with \texttt{wespeaker-voxceleb-resnet34-LM} embeddings; \texttt{bengaliAI/tugstugi\_bengaliai-asr\_whisper-medium} (rev \texttt{da605cc1}) via CTranslate2; \texttt{csebuetnlp/banglabert} (rev \texttt{9ce791f3}); Claude Opus 5 judge; PyTorch 2.12, \texttt{transformers}, \texttt{scikit-learn} \\ \hline
 \thd{Data source location}      & Bangladesh; Bangla-language national business/economics television programmes (ATN Bangla, RTV Business, Desh TV, GTV, Kaler Kantho, Star News, Dhaka Stream and others) \\ \hline
 \thd{Collection period}         & Original broadcast dates are \textbf{not recorded} in the source postings and are therefore not claimed; \texttt{registry.csv} carries channel, title and duration but no air date. Episodes were retrieved from public platform postings and the pipeline runs were executed August--September 2026 (second build). \\ \hline
-\thd{Dataset size}              & 45 unique episodes ($\approx$28.6 h audio); 5{,}395 ASR decode windows; \textbf{2{,}414 speaker turns} ($\approx$219{,}000 words); 212 speaker--episode units; 150 judged units; 1{,}811 turn labels; 1{,}630 supervised turns \\ \hline
+\thd{Dataset size}              & 45 unique episodes ($\approx$28.6 h audio); 5{,}327 ASR decode windows; \textbf{2{,}414 speaker turns} ($\approx$219{,}000 words); 212 speaker--episode units; 150 judged units; 1{,}811 turn labels; 1{,}630 supervised turns \\ \hline
 \thd{Target / labels}           & Turn level: \{\texttt{negative}, \texttt{neutral}, \texttt{positive}\} (plus \texttt{illegible}, excluded from supervision). Speaker level: \{\texttt{negative}, \texttt{mixed}, \texttt{neutral}, \texttt{positive}\} plus a continuous \texttt{stance\_score} $\in[-1,1]$. \\ \hline
 \thd{Accessibility}             & Git repository (restricted at submission): {\scriptsize\url{https://github.com/mayer-doa-coder/bangla-financial-talkshow-sentiment}}. It carries the derived annotations, transcripts, timings, diarization output, the build and baseline code and this report; the source broadcast audio is not redistributed. \\ \hline
 \thd{License / reuse terms}     & CC BY 4.0 for the derived annotations; source broadcast audio is third-party copyrighted and is \textbf{not} redistributed --- see Section 13. \\ \hline
@@ -502,7 +508,7 @@ decisions left an artefact in the archive that a reader can check:
 
 \textbf{What this review does \emph{not} include, stated explicitly.} No independent human
 annotator re-labelled individual turns. The per-episode annotation drafts in the roll folders
-(\texttt{annotation\_drafts/}, 42 files, 4{,}886 utterances) were prepared for exactly that step
+(\texttt{annotation\_drafts/}, 46 files, 5{,}395 utterances) were prepared for exactly that step
 and every one of them still carries \texttt{human\_verified: false},
 \texttt{annotation\_status: review\_required}, an empty \texttt{labels} list and an empty
 \texttt{annotator\_id}. Human effort in this build went into deciding \emph{what was fit to
@@ -596,7 +602,7 @@ Unique episodes (after transcript-hash dedup) & 45 (from 46 processed, 56 regist
 Episodes with trusted (\texttt{pyannote}) diarization & \textbf{45 --- all of them} \\ \hline
 Episodes with fallback diarization & 0 (was 5 in build 1; re-diarized) \\ \hline
 Total audio & $\approx$28.6 h \\ \hline
-ASR decode windows & 5{,}395 \\ \hline
+ASR decode windows & 5{,}327 \\ \hline
 Speaker turns & \textbf{2{,}414} ($\approx$219{,}000 words) \\ \hline
 Turns by role & guest 1{,}236, host 926, unassigned 233, minor 19 \\ \hline
 Speaker--episode units & 212 total; 150 judged; 147 speaker-level valid (45 hosts, 103 guests, 2 minor) \\ \hline
@@ -640,7 +646,7 @@ the distinction between data cleaning and model-specific preprocessing.}
         flagged \texttt{flag\_too\_short}.
   \item \textbf{Window $\rightarrow$ turn reconstruction.} The ``utterances'' in the fused files
         are \emph{not} turns: they are fixed $\approx$28 s ASR decode windows, a large fraction of
-        the 5{,}395 having a duration of 27.2--28.0 s. Every window boundary truncates a word, so
+        the 5{,}327 having a duration of 27.2--28.0 s. Every window boundary truncates a word, so
         many windows begin with an orthographically impossible Bengali dependent sign. Consecutive
         same-speaker windows are therefore merged back into turns and orphaned fragments dropped.
   \item \textbf{Missing data.} Words that fusion could not attribute carry
@@ -1067,7 +1073,7 @@ speaker verdicts were produced by Claude Opus 5 under a human-authored rubric, i
 pass. Human effort went into curation rather than labelling --- rubric design, diarization repair,
 unit screening, out-of-domain exclusion and the discarding of stale blocks, all itemised with
 counts in Section~5.5 --- but \textbf{no human annotator re-labelled individual turns}, and the
-annotation drafts in the roll folders still record \texttt{human\_verified: false} for all 4{,}886
+annotation drafts in the roll folders still record \texttt{human\_verified: false} for all 5{,}395
 prepared utterances. Transcripts are machine-generated by Whisper-medium and speaker
 segments by \texttt{pyannote}. Every score in this report is agreement with an AI judge, not with
 human truth. \\ \hline
