@@ -13,3 +13,9 @@ imageio-ffmpeg>=0.5,<1
 torch>=2.4,<3
 # Gradio 6.22 and Transformers 5.x share the Hugging Face Hub 1.x stack.
 transformers>=5.15,<6
+
+# Bangla normalisation the model was fine-tuned with. Without it the demo
+# falls back to bare NFC; on this corpus the fallback reproduced every one of
+# the 324 held-out predictions, so it is a convenience rather than a
+# requirement, but install it to match the training pipeline exactly:
+#   pip install git+https://github.com/csebuetnlp/normalizer

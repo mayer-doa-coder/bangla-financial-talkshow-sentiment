@@ -32,6 +32,15 @@ speaker as `<roll>::<episode> / Speaker N`. Speaker IDs remain episode-local.
   scores, its confusion matrix, per-class scores, per-epoch training history
   and prediction examples. These labels come from an LLM judge, so every
   score there is agreement with that judge, not with human ground truth.
+  The same tab reports **Task B**, the verdict for a speaker across a whole
+  episode, with its baseline ladder, confusion matrix, slice breakdowns and
+  the oracle ceiling that shows why it is a separate task rather than a sum
+  of the turn labels.
+- A **Run the model** tab that loads the fine-tuned checkpoint and runs it
+  live: pick a speaker and watch every one of their turns be classified and
+  aggregated into an episode verdict beside the judge's own, or paste any
+  Bangla sentence and see the three class probabilities. It runs on CPU with
+  no network access.
 - The complete submission-gate table, including honest SKIPPED status for
   WER, DER, target/polarity F1, and error propagation when gold references
   are absent.
@@ -40,6 +49,28 @@ speaker as `<roll>::<episode> / Speaker N`. Speaker IDs remain episode-local.
 
 Retrieval relevance is a ranking score, not accuracy. Speaker IDs are model
 predictions, not real-person identities.
+
+## Running the trained model from the demo
+
+The fine-tuned checkpoint ships in
+`speaker_sentiment/runs/banglabert_turn/model/` (423 MB), so the demo can
+predict rather than only replay recorded numbers.
+
+- **Nothing is downloaded.** The checkpoint, tokenizer and aggregation rule
+  are read from disk. The tab works on a machine that has never contacted
+  Hugging Face.
+- **The settings come from the run itself.** Input mode, sequence length and
+  the aggregation rule are read from that run's `metrics.json`, so the live
+  output cannot drift from the notebook that produced the reported scores.
+- **It is verifiable.** On this machine the live path reproduced all 324
+  recorded held-out predictions exactly, with probabilities agreeing to
+  around 1e-6. `check_model_setup.py` repeats a short version of that check.
+- **It predicts; it does not train.** Re-training is the notebook's job and
+  takes about 10 minutes on a T4.
+
+Expect a few seconds for the first prediction while the checkpoint loads, then
+roughly a second per turn on a laptop CPU. A speaker with a dozen turns scores
+in well under a minute.
 
 ## Six-member consolidation layout
 
@@ -139,8 +170,15 @@ From the repository root:
 
 ```powershell
 python -m pip install -r demo/requirements.txt
-python demo/app.py --data-root .
+python -X utf8 demo/check_model_setup.py    # confirm the model will run here
+python -X utf8 demo/app.py --data-root .
 ```
+
+`check_model_setup.py` is worth running once on any machine that will present
+this work. It loads the checkpoint offline and re-predicts two dozen held-out
+turns, so a green result means the live tab will work in front of an audience.
+A non-zero exit means only the live tab is affected; transcript search and the
+recorded results still run.
 
 Open the local URL the app prints. It is normally
 `http://127.0.0.1:7860`, but Windows reserves blocks of TCP ports for

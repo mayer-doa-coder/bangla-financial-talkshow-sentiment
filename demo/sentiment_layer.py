@@ -45,6 +45,18 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _read_csv(path: Path) -> list[dict[str, str]]:
+    if not path.is_file():
+        return []
+    import csv
+
+    try:
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            return list(csv.DictReader(handle))
+    except OSError:
+        return []
+
+
 def _read_json(path: Path) -> dict[str, Any]:
     if not path.is_file():
         return {}
@@ -127,6 +139,10 @@ class SentimentLayer:
         self.metrics: dict[str, Any] = {}
         self.baseline_metrics: dict[str, Any] = {}
         self.history: list[dict[str, str]] = []
+        # Task B: one verdict per speaker per whole episode, scored over all
+        # 147 units under episode-disjoint cross-validation.
+        self.speaker_metrics: dict[str, Any] = {}
+        self.speaker_tables: dict[str, list[dict[str, str]]] = {}
         if self.root is None:
             self.warnings.append(
                 "speaker_sentiment/ not found; the demo shows pipeline evidence only."
@@ -219,6 +235,16 @@ class SentimentLayer:
             with history_path.open(encoding="utf-8-sig", newline="") as handle:
                 self.history = list(csv.DictReader(handle))
 
+        # Task B artifacts, written by speaker_level_eval.py. They are read
+        # rather than recomputed so the demo quotes the same numbers as the
+        # report without needing the model present.
+        speaker_run = self.root / "runs" / "speaker_level"
+        self.speaker_metrics = _read_json(speaker_run / "metrics.json")
+        for name in ("system_comparison", "per_class", "confusion_matrix",
+                     "breakdown_role", "breakdown_turns", "breakdown_quality",
+                     "errors"):
+            self.speaker_tables[name] = _read_csv(speaker_run / f"{name}.csv")
+
     # ----------------------------------------------------------------- query
 
     @property
@@ -228,6 +254,100 @@ class SentimentLayer:
     @property
     def has_model_run(self) -> bool:
         return bool(self.metrics)
+
+    @property
+    def has_speaker_run(self) -> bool:
+        """True when the Task B evaluation has been run."""
+
+        return bool(self.speaker_metrics)
+
+    def speaker_system_rows(self) -> list[dict[str, Any]]:
+        """The Task B ladder: floor, control, model, and the oracle ceiling."""
+
+        label = {
+            "majority_class": "Always predict the commonest verdict",
+            "tfidf_speaker_script": "TF-IDF over the speaker's whole script",
+            "hierarchical_banglabert": "Hierarchical BanglaBERT (the Task B model)",
+            "oracle_aggregated_gold_turns": "Oracle: the judge's own turn labels, aggregated",
+        }
+        note = {
+            "majority_class": "floor",
+            "tfidf_speaker_script": "bag-of-words control",
+            "hierarchical_banglabert": "attention pooling over turn embeddings",
+            "oracle_aggregated_gold_turns": "a ceiling, not a model",
+        }
+        rows = []
+        for row in self.speaker_tables.get("system_comparison", []):
+            key = row.get("system", "")
+            rows.append({
+                "System": label.get(key, key),
+                "Accuracy": _fmt(row.get("accuracy")),
+                "Macro-F1": _fmt(row.get("macro_f1")),
+                "Units": row.get("units", ""),
+                "What it is": note.get(key, ""),
+            })
+        return rows
+
+    def speaker_per_class_rows(self) -> list[dict[str, Any]]:
+        return [{
+            "Class": row.get("class", ""),
+            "Units": row.get("support", ""),
+            "Precision": _fmt(row.get("precision")),
+            "Recall": _fmt(row.get("recall")),
+            "F1": _fmt(row.get("f1")),
+        } for row in self.speaker_tables.get("per_class", [])]
+
+    def speaker_confusion_rows(self) -> list[dict[str, Any]]:
+        rows = []
+        for row in self.speaker_tables.get("confusion_matrix", []):
+            entry = {"Judge ↓ / Model →": row.get("judge", "")}
+            for name in SPEAKER_CLASSES:
+                entry[name] = row.get(name, "")
+            entry["total"] = row.get("support", "")
+            rows.append(entry)
+        return rows
+
+    def speaker_breakdown_rows(self) -> list[dict[str, Any]]:
+        """Role, talk-time and transcript-quality slices in one table."""
+
+        blocks = (
+            ("by role", "breakdown_role", "role"),
+            ("by how much the speaker said", "breakdown_turns", "turn_bucket"),
+            ("by transcript quality", "breakdown_quality", "transcript_quality"),
+        )
+        rows = []
+        for title, table, key in blocks:
+            for row in self.speaker_tables.get(table, []):
+                rows.append({
+                    "Cut": title,
+                    "Slice": row.get(key, ""),
+                    "Units": row.get("units", ""),
+                    "Accuracy": _fmt(row.get("accuracy")),
+                    "Macro-F1": _fmt(row.get("macro_f1")),
+                })
+        return rows
+
+    def speaker_error_rows(self, limit: int = 12) -> list[dict[str, Any]]:
+        return [{
+            "Speaker": row.get("speaker_key", ""),
+            "Role": row.get("role", ""),
+            "Turns": row.get("n_turns", ""),
+            "Words": row.get("n_words", ""),
+            "Judge": row.get("judge", ""),
+            "Model": row.get("model", ""),
+            "Judge stance": row.get("stance_score", ""),
+        } for row in self.speaker_tables.get("errors", [])[:limit]]
+
+    def speaker_headline(self) -> dict[str, Any]:
+        m = self.speaker_metrics
+        return {
+            "accuracy": m.get("accuracy"),
+            "macro_f1": m.get("macro_f1"),
+            "units": m.get("n_units"),
+            "episodes": m.get("n_episodes"),
+            "protocol": m.get("protocol", ""),
+            "class_counts": m.get("class_counts", {}),
+        }
 
     def verdict(self, global_episode: str, speaker_id: int) -> SpeakerVerdict | None:
         return self.speakers.get((global_episode, int(speaker_id)))

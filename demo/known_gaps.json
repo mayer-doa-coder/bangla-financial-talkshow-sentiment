@@ -6,7 +6,9 @@
     "2107006::ep011": "registry points at 16.mp3, which was never uploaded to the shared folder",
     "2107006::ep012": "registry points at 17.mp3, which was never uploaded to the shared folder",
     "2107006::ep013": "registry points at 18.mp3, which was never uploaded to the shared folder",
-    "2107006::ep014": "registry points at 19.mp3, which was never uploaded to the shared folder; its runtime coincides with ep006 to the centisecond, so audio must not be matched by duration here",
-    "2107010::ep006": "processed in a later pipeline run; no registry row and the source recording was not retained"
+    "2107006::ep014": "registry points at 19.mp3, which was never uploaded to the shared folder; its runtime coincides with ep006 to the centisecond, so audio must not be matched by duration here"
+  },
+  "resolved": {
+    "2107010::ep006": "Resolved. This episode is the duplicate of 2107004::ep006 that the report records as removed by transcript hash, and both transcripts end at the same 1411.3 s. The recording 2107004 uploaded satisfies both, so the demo now pairs them and playback works."
   }
 }

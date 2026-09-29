@@ -387,6 +387,57 @@ def _match_by_duration(
     return best[1].resolve() if best else None
 
 
+TRANSCRIPT_MATCH_TOLERANCE_SEC = 1.0
+
+
+def _transcript_end_sec(fused: dict[str, Any]) -> float:
+    """Timestamp of the last transcribed word in a fused episode."""
+
+    return max((_safe_float(u.get("end_sec")) for u in fused.get("utterances", [])),
+               default=0.0)
+
+
+def _lock_unambiguous_audio(
+    fused_by_episode: dict[str, float], root: Path
+) -> dict[str, Path]:
+    """Pair episodes with recordings where the evidence admits no alternative.
+
+    When ASR decodes a file to its end, the last word lands within a fraction
+    of a second of the file's duration. That coincidence identifies the
+    recording far more reliably than a registry row, which can survive a
+    re-run in which the audio was renumbered.
+
+    Only unambiguous pairs are returned: the episode must match exactly one
+    recording, and that recording must match exactly one episode. Anything
+    contested is left to the ordinary resolution path rather than guessed at,
+    because two different episodes of one programme can share a runtime.
+    """
+
+    durations: dict[Path, float] = {}
+    for path in _audio_files_under(root):
+        probed = probe_duration(path)
+        if probed is not None:
+            durations[path.resolve()] = probed
+
+    wanted: dict[str, set[Path]] = {}
+    for episode_id, end_sec in fused_by_episode.items():
+        if end_sec <= 0:
+            continue
+        wanted[episode_id] = {
+            path for path, dur in durations.items()
+            if abs(dur - end_sec) <= TRANSCRIPT_MATCH_TOLERANCE_SEC
+        }
+
+    locked: dict[str, Path] = {}
+    for episode_id, paths in wanted.items():
+        if len(paths) != 1:
+            continue
+        only = next(iter(paths))
+        if sum(1 for other in wanted.values() if other == {only}) == 1:
+            locked[episode_id] = only
+    return locked
+
+
 def _resolve_audio_path(
     local_path: str,
     *,
@@ -394,6 +445,7 @@ def _resolve_audio_path(
     data_root: Path,
     episode_id: str,
     duration_sec: float = 0.0,
+    transcript_end_sec: float = 0.0,
     claimed: set[Path] | None = None,
 ) -> Path | None:
     """Locate the recording an episode was transcribed from.
@@ -443,8 +495,16 @@ def _resolve_audio_path(
                 return resolved
         return None
 
+    def plausible(path: Path) -> bool:
+        """A recording cannot be shorter than its own last transcribed word."""
+
+        if transcript_end_sec <= 0:
+            return True
+        probed = probe_duration(path)
+        return probed is None or probed >= transcript_end_sec - DURATION_TOLERANCE_SEC
+
     exact = first_existing(candidates)
-    if exact is not None:
+    if exact is not None and plausible(exact):
         return exact
 
     # Bangla filenames survive a Drive/Windows round trip in a different
@@ -460,15 +520,19 @@ def _resolve_audio_path(
         if not wanted:
             break
         for path in _audio_files_under(root):
-            if _normalized_filename(path.name) == wanted and path.resolve() not in taken:
+            if (_normalized_filename(path.name) == wanted
+                    and path.resolve() not in taken and plausible(path)):
                 return path.resolve()
 
     # The filename is gone (renamed or re-encoded on upload). Identify the
     # recording by its duration instead.
-    for root in (contributor_root, data_root):
-        matched = _match_by_duration(root, duration_sec, exclude=taken)
-        if matched is not None:
-            return matched
+    for target in (duration_sec, transcript_end_sec):
+        if target <= 0:
+            continue
+        for root in (contributor_root, data_root):
+            matched = _match_by_duration(root, target, exclude=taken)
+            if matched is not None and plausible(matched):
+                return matched
 
     # Last resort: the ``01.mp3`` numbering convention some registries use.
     # The numbering does not always follow the episode order, so a candidate
@@ -491,7 +555,8 @@ def _resolve_audio_path(
         guess = first_existing([path for path in numbered if path.resolve() not in taken])
         if guess is not None:
             probed = probe_duration(guess) if duration_sec > 0 else None
-            if probed is None or abs(probed - duration_sec) <= DURATION_TOLERANCE_SEC:
+            if ((probed is None or abs(probed - duration_sec) <= DURATION_TOLERANCE_SEC)
+                    and plausible(guess)):
                 return guess
     return None
 
@@ -632,23 +697,45 @@ class CorpusIndex:
             fused_dir = resolve_stage_dir(bundle_root, "fused")
             claimed_audio: set[Path] = set()
 
+            # Read every transcript's span first. Where a span identifies one
+            # recording and nothing else competes for it, that pairing is
+            # settled before the registry is consulted: the registry can
+            # survive a pipeline re-run in which the audio was renumbered,
+            # whereas a transcript is produced from the file it describes.
+            fused_cache: dict[Path, dict[str, Any]] = {}
+            spans: dict[str, float] = {}
             for fused_path in sorted(fused_dir.glob("*.json")):
                 try:
-                    fused = _load_json(fused_path)
+                    loaded = _load_json(fused_path)
                 except (OSError, json.JSONDecodeError) as exc:
                     self.warnings.append(f"Skipped {fused_path}: {exc}")
                     continue
+                fused_cache[fused_path] = loaded
+                spans[str(loaded.get("episode_id") or fused_path.stem)] = (
+                    _transcript_end_sec(loaded)
+                )
+            locked_audio = _lock_unambiguous_audio(
+                spans, _contributor_root(bundle_root, self.data_root)
+            )
+
+            for fused_path, fused in fused_cache.items():
                 episode_id = str(fused.get("episode_id") or fused_path.stem)
                 global_episode = f"{collection}::{episode_id}"
                 meta = registry.get(episode_id, {})
-                audio = _resolve_audio_path(
-                    str(meta.get("local_path", "")),
-                    bundle_root=bundle_root,
-                    data_root=self.data_root,
-                    episode_id=episode_id,
-                    duration_sec=_safe_float(meta.get("duration_sec")),
-                    claimed=claimed_audio,
-                )
+                transcript_end = spans.get(episode_id, 0.0)
+                audio = locked_audio.get(episode_id)
+                if audio is not None and audio in claimed_audio:
+                    audio = None
+                if audio is None:
+                    audio = _resolve_audio_path(
+                        str(meta.get("local_path", "")),
+                        bundle_root=bundle_root,
+                        data_root=self.data_root,
+                        episode_id=episode_id,
+                        duration_sec=_safe_float(meta.get("duration_sec")),
+                        transcript_end_sec=transcript_end,
+                        claimed=claimed_audio,
+                    )
                 if audio:
                     claimed_audio.add(audio)
                 else:
@@ -1089,6 +1176,54 @@ class CorpusIndex:
             "1",
             "-ar",
             "16000",
+            str(target),
+        ]
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
+        return target if completed.returncode == 0 and target.exists() else None
+
+    def create_audio_clip_for_span(
+        self,
+        global_episode: str,
+        start_sec: float,
+        end_sec: float,
+        *,
+        padding_sec: float = 1.0,
+        max_seconds: float = 90.0,
+        output_dir: str | Path | None = None,
+    ) -> Path | None:
+        """Cut an arbitrary span of one episode.
+
+        The search tab cuts around a single decode window, which it can find by
+        record key. A speaker turn spans several windows, so the live-model tab
+        needs the span itself. Long turns are capped because the point is to
+        hear the speaker, not to replay several minutes of the programme.
+        """
+
+        episode = self.episodes.get(global_episode)
+        if episode is None or not episode.audio_path:
+            return None
+        ffmpeg = _ffmpeg_exe()
+        if not ffmpeg:
+            return None
+        start = max(0.0, float(start_sec) - float(padding_sec))
+        duration = float(end_sec) - float(start_sec) + 2 * float(padding_sec)
+        duration = max(0.5, min(duration, float(max_seconds)))
+
+        target_dir = Path(output_dir or tempfile.gettempdir()) / "bangla_financial_search_clips"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        digest = hashlib.sha1(
+            f"{global_episode}:{start:.3f}:{duration:.3f}".encode("utf-8")
+        ).hexdigest()[:12]
+        target = target_dir / f"span_{digest}.wav"
+        if target.exists():
+            return target
+
+        command = [
+            ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
+            "-ss", f"{start:.3f}",
+            "-i", episode.audio_path,
+            "-t", f"{duration:.3f}",
+            "-ac", "1", "-ar", "16000",
             str(target),
         ]
         completed = subprocess.run(command, capture_output=True, text=True, check=False)

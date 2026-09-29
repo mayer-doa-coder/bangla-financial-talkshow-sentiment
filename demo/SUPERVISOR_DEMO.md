@@ -16,10 +16,18 @@
    reason in `demo/known_gaps.json`. Their transcripts still search normally;
    only playback is unavailable, so pick a playback example from another
    episode.
-4. Launch the app once, prepare semantic search, and try every query below.
+4. Confirm the trained model will run on this machine:
+   `python -X utf8 demo/check_model_setup.py`. It loads the checkpoint offline
+   and re-predicts two dozen held-out turns, so a green result means the live
+   tab will work in front of an audience. It needs no network.
+
+5. Launch the app once, prepare semantic search, and try every query below.
    Read the local URL the app prints: 7860 is inside a Windows reserved port
    range on some machines, and the app then moves to a free port and says so.
-5. Keep a local browser tab open even if you also use a temporary share link.
+6. Keep a local browser tab open even if you also use a temporary share link.
+   Open the **Run the model** tab and press *Load the model now* before the
+   audience arrives. The checkpoint is 422 MB and the first load takes a few
+   seconds; every prediction after that is quick.
 
 ## Eight-minute live sequence
 
@@ -48,9 +56,26 @@
     matrix and per-class table beside it. Say plainly that the labels come
     from an LLM judge under a fixed rubric, so these are agreement figures,
     not agreement with human truth.
-11. **Evaluation status:** show the complete gate table. Explicitly distinguish
+11. **Run the model live.** Open the **Run the model** tab. This is the step
+    that separates a recorded result from a working model.
+
+    - Pick a speaker and press **Run the model**. The checkpoint classifies
+      every turn that speaker took and aggregates them into one episode
+      verdict, on this machine, with no network. The judge's own verdict sits
+      beside it, so agreement and disagreement are both visible.
+    - Play the clip that appears so the room hears the speaker being scored.
+    - Then paste a sentence of your own into **classify any Bangla text**.
+      Something the model has never seen is the most convincing test, and it
+      answers the obvious question of whether the numbers were merely loaded
+      from a file.
+
+    Say plainly what the comparison means: the judge column is a language
+    model's opinion, not human ground truth, so the match rate is agreement
+    between two automatic systems.
+
+12. **Evaluation status:** show the complete gate table. Explicitly distinguish
     missing gold-dependent metrics from completed automatic processing.
-12. **Reproducible output:** download the search CSV and project-evidence ZIP.
+13. **Reproducible output:** download the search CSV and project-evidence ZIP.
 
 ## Suggested explanation
 
@@ -69,7 +94,12 @@ audio, so every claim is inspectable.”
 - Do not claim measured WER, DER, or target/polarity F1: those still have no
   gold reference.
 - Do quote the speaker-sentiment macro-F1, but always with what it is measured
-  against -- an LLM judge, not human annotation. No human has re-labelled an
+  against -- an LLM judge, not human annotation.
+- The live tab predicts; it does not re-train. If asked whether the numbers
+  could have been fabricated, the honest answer is that the reported scores
+  come from the recorded run, and the live tab reproduces that run's
+  predictions exactly on the held-out turns, which anyone can check with
+  `demo/check_model_setup.py`. No human has re-labelled an
   individual turn; every annotation draft still reads `human_verified: false`.
 - Do not say the output is guaranteed correct. Present it as automatic,
   traceable evidence ready for targeted review.

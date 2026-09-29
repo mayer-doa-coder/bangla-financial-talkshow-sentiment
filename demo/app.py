@@ -29,9 +29,11 @@ from search_core import (
     SEMANTIC_MODEL,
     CorpusIndex,
     SearchHit,
+    format_timestamp,
     highlight_query,
 )
 from showcase_core import ProjectShowcase
+from model_runner import ModelRunner
 
 
 APP_TITLE = "অর্থকথা অনুসন্ধান"
@@ -415,10 +417,145 @@ def build_app(index: CorpusIndex, semantic_cache_dir: Path) -> gr.Blocks:
     summary = index.corpus_summary()
     showcase = ProjectShowcase(index)
     sentiment = showcase.sentiment
+    # The checkpoint is only read when someone asks for a prediction, so the
+    # app still starts in a second on a machine without torch loaded.
+    runner = ModelRunner(sentiment.root)
+
+    def _speaker_choices() -> list[str]:
+        rows = []
+        for (episode, speaker_id), verdict in sorted(sentiment.speakers.items()):
+            rows.append(
+                f"{episode} / Speaker {speaker_id}  ({verdict.role}, "
+                f"{verdict.n_turns} turns, judge: {verdict.judge_label})"
+            )
+        return rows
+
+    def _parse_speaker(choice: str) -> tuple[str, int] | None:
+        if not choice or " / Speaker " not in choice:
+            return None
+        episode, _, rest = choice.partition(" / Speaker ")
+        number = rest.split()[0] if rest.split() else ""
+        try:
+            return episode.strip(), int(number)
+        except ValueError:
+            return None
+
+    def _turn_rows(episode: str, speaker_id: int) -> list[dict[str, Any]]:
+        return [
+            {
+                "turn_id": turn.turn_id,
+                "role": turn.role,
+                "text": turn.text,
+                "start_sec": turn.start_sec,
+                "end_sec": turn.end_sec,
+                "label": turn.label,
+            }
+            for turn in sentiment.turns_by_episode.get(episode, [])
+            if turn.speaker_id == speaker_id and turn.text
+        ]
     episode_choices = index.global_episodes
     collection_choices = [ALL_COLLECTIONS, *index.collections]
     speaker_choices: list[Any] = [ALL_SPEAKERS, *[str(value) for value in index.speaker_ids]]
     holder = {"index": index}
+
+    # ------------------------------------------------ live model inference
+
+    _LABEL_ICON = {"negative": "\U0001F534", "neutral": "\u26AA",
+                   "positive": "\U0001F7E2", "mixed": "\U0001F7E1"}
+
+    def _label(name: str) -> str:
+        return f"{_LABEL_ICON.get(name, '')} **{name}**" if name else "n/a"
+
+    def load_model():
+        return runner.warm_up()
+
+    def score_speaker(choice: str):
+        empty = pd.DataFrame()
+        parsed = _parse_speaker(choice)
+        if parsed is None:
+            return "Pick a speaker first.", None, empty
+        episode, speaker_id = parsed
+        rows = _turn_rows(episode, speaker_id)
+        if not rows:
+            return (f"No labelled turns found for {episode} / Speaker {speaker_id}.",
+                    None, empty)
+        try:
+            score = runner.score_speaker(rows)
+        except Exception as exc:                                   # noqa: BLE001
+            return (f"The model could not be run: `{type(exc).__name__}: {exc}`",
+                    None, empty)
+
+        judge = sentiment.verdict(episode, speaker_id)
+        agree = sum(1 for t in score.turns if t.judge_label and t.pred == t.judge_label)
+        judged = sum(1 for t in score.turns if t.judge_label)
+        verdict_matches = bool(judge) and judge.judge_label == score.verdict
+
+        lines = [
+            f"### {episode} / Speaker {speaker_id}",
+            "",
+            "| | Model, run just now | The LLM judge |",
+            "|---|---|---|",
+            f"| Episode verdict | {_label(score.verdict)} | "
+            f"{_label(judge.judge_label) if judge else 'n/a'} |",
+            f"| Stance score | `{score.stance:+.3f}` | "
+            f"{f'`{judge.stance_score:+.3f}`' if judge else 'n/a'} |",
+            f"| Turns scored | {len(score.turns)} | "
+            f"{judge.n_turns if judge else 'n/a'} |",
+            "",
+            f"The verdict came from **{len(score.turns)} turn predictions** aggregated with "
+            f"the `{score.rule}` rule, in **{score.elapsed_sec:.1f} s** on CPU. "
+            f"Turn-level agreement with the judge: **{agree}/{judged}**"
+            f"{f' ({agree / judged * 100:.0f}%)' if judged else ''}. "
+            f"The episode verdict "
+            f"{'**matches** the judge.' if verdict_matches else 'differs from the judge.'}",
+            "",
+            "_Both columns are opinions about an automatic transcript. The judge is a "
+            "language model, not human ground truth, so this measures agreement rather "
+            "than accuracy._",
+        ]
+
+        table = pd.DataFrame([{
+            "Start": format_timestamp(t.start_sec),
+            "Words": t.n_words,
+            "Model": t.pred,
+            "Confidence": f"{t.confidence:.3f}",
+            "Judge": t.judge_label or "n/a",
+            "Agree": "yes" if t.judge_label and t.pred == t.judge_label else (
+                "no" if t.judge_label else "n/a"),
+            "p(neg)": f"{t.p_negative:.3f}",
+            "p(neu)": f"{t.p_neutral:.3f}",
+            "p(pos)": f"{t.p_positive:.3f}",
+            "Turn": t.text[:160] + ("\u2026" if len(t.text) > 160 else ""),
+        } for t in score.turns])
+
+        clip = None
+        longest = max(score.turns, key=lambda t: t.n_words, default=None)
+        if longest is not None:
+            clip = holder["index"].create_audio_clip_for_span(
+                episode, longest.start_sec, longest.end_sec)
+        return "\n".join(lines), clip, table
+
+    def classify_free_text(text: str, role: str):
+        if not str(text or "").strip():
+            return "Type or paste a Bangla turn first."
+        try:
+            out = runner.classify_turns([{"text": text, "role": role}])
+        except Exception as exc:                                   # noqa: BLE001
+            return f"The model could not be run: `{type(exc).__name__}: {exc}`"
+        if not out:
+            return "The model returned nothing for that input."
+        t = out[0]
+        bars = "\n".join(
+            f"| {name} | `{value:.4f}` | {'\u2588' * max(1, round(value * 28))} |"
+            for name, value in (("negative", t.p_negative), ("neutral", t.p_neutral),
+                                ("positive", t.p_positive))
+        )
+        return (
+            f"### {_label(t.pred)}\n\n"
+            f"| Class | Probability | |\n|---|---|---|\n{bars}\n\n"
+            f"Scored as a **{role}** turn under input mode `{runner.input_mode}`, "
+            f"truncated at {runner.max_len} subwords."
+        )
 
     def run_search(
         query: str,
@@ -796,6 +933,125 @@ def build_app(index: CorpusIndex, semantic_cache_dir: Path) -> gr.Blocks:
                                 label="Confident disagreements with the judge",
                             )
 
+                    if sentiment.has_speaker_run:
+                        _head = sentiment.speaker_headline()
+                        _counts = _head["class_counts"]
+                        gr.Markdown(
+                            f"""
+                            ---
+                            ### Task B: the speaker's position across a whole episode
+
+                            This is the unit the dataset was built for, and it is a separate
+                            task rather than a tally of the turn labels beneath it. Scored over
+                            **all {_head['units']} speaker units** in
+                            **{_head['episodes']} episodes** under 5-fold cross-validation
+                            grouped by episode, so every unit is held out exactly once.
+
+                            **Read macro-F1, not accuracy.** {_counts.get('negative', 0)} of the
+                            {_head['units']} units are negative, so always answering
+                            *negative* already scores {100 * _counts.get('negative', 0) / max(_head['units'], 1):.1f}%
+                            while being useless. The bag-of-words control below posts the highest
+                            accuracy of any learned system and nearly the lowest macro-F1.
+
+                            **Why this cannot be folded into Task A.** The oracle row is handed
+                            the judge's own gold turn labels and combines them perfectly. It
+                            still reaches only 0.850. About one speaker verdict in seven is not
+                            present in the turn labels at all.
+                            """
+                        )
+                        gr.Dataframe(
+                            pd.DataFrame(sentiment.speaker_system_rows()),
+                            interactive=False, wrap=True,
+                            label="Task B systems, 5-fold episode-disjoint cross-validation",
+                        )
+                        with gr.Row():
+                            with gr.Column(scale=5):
+                                gr.Dataframe(
+                                    pd.DataFrame(sentiment.speaker_per_class_rows()),
+                                    interactive=False, wrap=True,
+                                    label="Per-class scores",
+                                )
+                            with gr.Column(scale=5):
+                                gr.Dataframe(
+                                    pd.DataFrame(sentiment.speaker_confusion_rows()),
+                                    interactive=False, wrap=True,
+                                    label="Confusion matrix over 147 out-of-fold verdicts",
+                                )
+                        with gr.Accordion("Slices, and where Task B fails", open=False):
+                            gr.Dataframe(
+                                pd.DataFrame(sentiment.speaker_breakdown_rows()),
+                                interactive=False, wrap=True,
+                                label="By role, talk time and transcript quality",
+                            )
+                            gr.Dataframe(
+                                pd.DataFrame(sentiment.speaker_error_rows()),
+                                interactive=False, wrap=True,
+                                label="The speakers it gets wrong, most talkative first",
+                            )
+
+            with gr.Tab("Run the model", id="live"):
+                gr.Markdown(
+                    """
+                    ## Run the trained model here, now
+
+                    Everything in the tabs above is a recorded result. This tab loads the
+                    fine-tuned BanglaBERT checkpoint that ships with the repository and runs
+                    it in front of you, on this machine, with no network access. The decoding
+                    settings are read from the run's own `metrics.json`, so what happens here
+                    cannot drift from the notebook that produced the reported scores.
+                    """
+                )
+                live_status = gr.Markdown(runner.status())
+                with gr.Row():
+                    live_load_button = gr.Button("Load the model now", variant="secondary")
+                    gr.Markdown(
+                        "_Loading reads a 422 MB checkpoint and takes a few seconds. "
+                        "You can skip this: it loads on the first prediction anyway._"
+                    )
+
+                gr.Markdown("### Score one speaker, end to end")
+                gr.Markdown(
+                    "Pick a speaker the judge has already labelled. The model classifies "
+                    "every turn they took, then aggregates those into a single verdict "
+                    "using the rule selected during training. The judge's own verdict is "
+                    "shown beside it so you can see where they agree and where they do not."
+                )
+                with gr.Row():
+                    live_speaker_pick = gr.Dropdown(
+                        choices=_speaker_choices(),
+                        value=(_speaker_choices() or [None])[0],
+                        label="Speaker (episode / speaker id)",
+                        scale=7,
+                    )
+                    live_score_button = gr.Button("Run the model", variant="primary", scale=2)
+                live_verdict = gr.Markdown()
+                live_audio = gr.Audio(label="Listen to this speaker", type="filepath")
+                live_turn_table = gr.Dataframe(
+                    interactive=False, wrap=True,
+                    label="Every turn, as the model scored it",
+                )
+
+                gr.Markdown("### Or classify any Bangla text")
+                gr.Markdown(
+                    "Paste a line of financial talk-show speech. Anything the model has "
+                    "never seen works too, which is the point of testing it live."
+                )
+                with gr.Row():
+                    live_free_text = gr.Textbox(
+                        label="Turn text",
+                        lines=3,
+                        placeholder="Paste or type Bangla text here",
+                        scale=7,
+                    )
+                    live_free_role = gr.Dropdown(
+                        choices=["guest", "host", "minor", "unassigned"],
+                        value="guest",
+                        label="Speaker role",
+                        scale=2,
+                    )
+                live_classify_button = gr.Button("Classify this turn", variant="primary")
+                live_free_result = gr.Markdown()
+
             with gr.Tab("Evaluation & downloads", id="evaluation"):
                 gr.Markdown(
                     """
@@ -903,6 +1159,18 @@ def build_app(index: CorpusIndex, semantic_cache_dir: Path) -> gr.Blocks:
             outputs=[preview_audio, preview_details],
         )
         semantic_button.click(build_semantic, outputs=[semantic_status])
+        live_load_button.click(load_model, outputs=live_status)
+        live_score_button.click(
+            score_speaker,
+            inputs=live_speaker_pick,
+            outputs=[live_verdict, live_audio, live_turn_table],
+        ).then(lambda: runner.status(), outputs=live_status)
+        live_classify_button.click(
+            classify_free_text,
+            inputs=[live_free_text, live_free_role],
+            outputs=live_free_result,
+        ).then(lambda: runner.status(), outputs=live_status)
+
         evidence_button.click(download_evidence, outputs=[evidence_download])
         selected_episode.change(
             explore_episode,
