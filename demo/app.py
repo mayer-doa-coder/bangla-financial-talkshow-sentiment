@@ -94,6 +94,22 @@ html, body, .gradio-container, .dark, .dark .gradio-container {
   color: var(--ink);
 }
 .gradio-container .prose p, .gradio-container .prose li { color: var(--ink); }
+/* Inline `code` spans in gr.Markdown (stance scores, rule names, error
+   messages) inherit Gradio's dark-mode code background by default; without
+   this override the text and its background are both near-black. */
+.gradio-container code, .gradio-container .prose code {
+  background: var(--green-soft) !important;
+  color: var(--green) !important;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.94em;
+}
+.gradio-container pre, .gradio-container pre code {
+  background: #f5f8f6 !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line);
+}
 .gradio-container input, .gradio-container textarea, .gradio-container select {
   background: var(--panel) !important;
   color: var(--ink) !important;
